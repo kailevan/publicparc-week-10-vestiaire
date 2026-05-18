@@ -113,6 +113,10 @@ function unlockBodyScroll() {
   document.body.style.overflow = '';
 }
 
+// Source tile remembered across browse mode, so we can morph BACK into
+// it when the user hits .plp-back.
+let sourceTile = null;
+
 function morphTileToPrototype(tile) {
   if (!morphClone || !window.protoApi) return;
   const tileImg = tile.querySelector('.card__img');
@@ -121,54 +125,50 @@ function morphTileToPrototype(tile) {
   const year = parseInt(tile.dataset.year, 10) || 2008;
   const bagName = tile.dataset.bagName || '';
 
-  // Capture start rect
+  sourceTile = tile;
+
+  // Capture start rect (the tile's image on screen)
   const startRect = tileImg.getBoundingClientRect();
 
-  // Mark the source tile (CSS hides its image so the clone is the only image)
+  // Mark the source tile (CSS hides its image/heart/details cleanly)
   tile.classList.add('card--is-source');
 
-  // Switch into morphing state so the prototype DOM lays out
+  // Switch into morphing state — makes prototype DOM lay out so we can
+  // measure the .bag's eventual screen rect.
   document.body.dataset.state = 'morphing';
   lockBodyScroll();
 
-  // Pre-warm the prototype: set year + bag image src + bag name
-  // All prototype UI (year, strip, bagname) is held at opacity 0 by CSS
-  // until state flips to "browse".
+  // Pre-warm prototype: year, bag name text. (We do NOT touch .bag__img
+  // anymore — the clone IS the bag from here on. Internal .bag__img--a/b
+  // are forced opacity 0 by CSS so they never compete with the clone.)
   window.protoApi.setYear(year);
   const bagLayer = window.protoApi.getBagEl();
-  const bagImgA = bagLayer.querySelector('.bag__img--a');
-  const bagImgB = bagLayer.querySelector('.bag__img--b');
-  bagImgA.src = imgSrc;
-  bagImgA.classList.add('is-visible');
-  bagImgB.classList.remove('is-visible');
-  bagImgA.style.opacity = '0';
   const bagnameEl = document.querySelector('.bagname');
   if (bagnameEl) bagnameEl.textContent = bagName;
 
-  // Measure target rect (the bag's eventual position in the prototype)
+  // Measure the bag's eventual screen rect (target)
   const targetRect = bagLayer.getBoundingClientRect();
 
-  // Position the clone over the source tile (same rect, same image).
-  // Start the clone's background as cream (matches the PLP card media bg).
+  // Position the clone at the tile rect, cream background to match PLP card
   morphCloneImg.src = imgSrc;
   morphClone.style.transition = 'none';
-  morphClone.style.left = `${startRect.left}px`;
-  morphClone.style.top = `${startRect.top}px`;
-  morphClone.style.width = `${startRect.width}px`;
+  morphClone.style.left   = `${startRect.left}px`;
+  morphClone.style.top    = `${startRect.top}px`;
+  morphClone.style.width  = `${startRect.width}px`;
   morphClone.style.height = `${startRect.height}px`;
   morphClone.style.opacity = '1';
   morphClone.style.background = '#f1efe9';
   morphClone.classList.add('is-active');
-  void morphClone.offsetWidth;        // force reflow
+  void morphClone.offsetWidth;
 
-  // PHASE 1 — within first 350ms, fade the clone background to white
-  //          in lockstep with the PLP turning white.
+  // PHASE 1 (0–T_FADE_PLP): fade clone background cream → white in
+  // lockstep with PLP and source tile turning white.
   requestAnimationFrame(() => {
     morphClone.style.transition = `background ${T_FADE_PLP}ms ease`;
     morphClone.style.background = '#ffffff';
   });
 
-  // PHASE 2 — at T_FADE_PLP, kick off the expansion.
+  // PHASE 2: at T_FADE_PLP, expand the clone to the target rect.
   setTimeout(() => {
     morphClone.style.transition = [
       `left ${T_EXPAND}ms ${EASE_EXPAND}`,
@@ -182,28 +182,98 @@ function morphTileToPrototype(tile) {
     morphClone.style.height = `${targetRect.height}px`;
   }, T_FADE_PLP);
 
-  // PHASE 3 — once clone has fully landed, switch state to browse
-  //          (CSS transitions reveal year, bagname, strip).
+  // PHASE 3: when clone has fully landed, flip state to browse.
+  // CSS reveals year / bagname / strip via their own transitions.
+  // The clone STAYS visible — it's the bag from now on. No handoff.
   setTimeout(() => {
     document.body.dataset.state = 'browse';
+    // After morph the clone sits over the prototype's .bag rect. Lock
+    // its transition so future src changes don't accidentally animate.
+    morphClone.style.transition = 'none';
   }, T_FADE_PLP + T_EXPAND + T_BUFFER);
+}
 
-  // Crossfade the clone out into the underlying real bag image
+// Reverse morph: back to PLP. The clone gracefully animates back to the
+// source tile's rect, then fades out so the tile's own image comes back.
+function morphPrototypeToPlp() {
+  if (!sourceTile) {
+    document.body.dataset.state = 'plp';
+    unlockBodyScroll();
+    return;
+  }
+  const tile = sourceTile;
+  const tileImg = tile.querySelector('.card__img');
+  if (!tileImg || !morphClone) {
+    document.body.dataset.state = 'plp';
+    unlockBodyScroll();
+    sourceTile = null;
+    return;
+  }
+
+  // Need the tile's rect AFTER PLP is showing again, but BEFORE we
+  // re-show its image. We can flip state→plp, measure the tile (PLP is
+  // laid out with the tile in flow), then run the reverse animation.
+  document.body.dataset.state = 'plp';
+  unlockBodyScroll();
+  // Force layout
+  void tile.offsetWidth;
+  const endRect = tileImg.getBoundingClientRect();
+
+  // Reverse phases:
+  //   Phase A: shrink clone back to tile rect (uses same easing as forward)
+  //   Phase B: source tile's bg returns cream, details/heart return
+  //   Phase C: clone fades out, tile image becomes visible
+
+  // The PLP rendered in state=plp will already have card--is-source
+  // styling (white bg, hidden img, hidden heart, fading details). We
+  // need to wait briefly then remove card--is-source so the tile
+  // returns to normal AT THE MOMENT the clone fades.
+
+  // Restore the clone's transition for the shrink animation.
+  morphClone.style.transition = [
+    `left ${T_EXPAND}ms ${EASE_EXPAND}`,
+    `top ${T_EXPAND}ms ${EASE_EXPAND}`,
+    `width ${T_EXPAND}ms ${EASE_EXPAND}`,
+    `height ${T_EXPAND}ms ${EASE_EXPAND}`,
+    `background ${T_FADE_PLP}ms ease`,
+  ].join(', ');
+  morphClone.style.background = '#f1efe9';
+  morphClone.style.left   = `${endRect.left}px`;
+  morphClone.style.top    = `${endRect.top}px`;
+  morphClone.style.width  = `${endRect.width}px`;
+  morphClone.style.height = `${endRect.height}px`;
+
+  // Once the clone has shrunk back, unmark the tile and hide the clone.
   setTimeout(() => {
-    bagImgA.style.opacity = '1';
-    morphClone.style.transition = 'opacity 250ms ease';
+    tile.classList.remove('card--is-source');
+    morphClone.style.transition = 'opacity 200ms ease';
     morphClone.style.opacity = '0';
-  }, T_FADE_PLP + T_EXPAND + T_BUFFER + 80);
+  }, T_EXPAND);
 
-  // Cleanup
   setTimeout(() => {
     morphClone.classList.remove('is-active');
     morphClone.style.transition = '';
     morphClone.style.opacity = '';
     morphClone.style.background = '';
-    tile.classList.remove('card--is-source');
-  }, T_TOTAL);
+    sourceTile = null;
+  }, T_EXPAND + 250);
 }
+
+// Keep clone aligned with the .bag's screen rect on viewport changes
+// while in browse / pdp.
+function realignCloneToBag() {
+  if (!morphClone || !morphClone.classList.contains('is-active')) return;
+  if (!window.protoApi) return;
+  const state = document.body.dataset.state;
+  if (state !== 'browse' && state !== 'pdp') return;
+  const rect = window.protoApi.getBagEl().getBoundingClientRect();
+  morphClone.style.transition = 'none';
+  morphClone.style.left   = `${rect.left}px`;
+  morphClone.style.top    = `${rect.top}px`;
+  morphClone.style.width  = `${rect.width}px`;
+  morphClone.style.height = `${rect.height}px`;
+}
+window.addEventListener('resize', realignCloneToBag);
 
 // Tile click handler — only the non-heart area triggers morph
 if (grid) {
@@ -219,9 +289,8 @@ if (grid) {
 const plpBack = document.getElementById('plpBack');
 if (plpBack) {
   plpBack.addEventListener('click', () => {
-    document.body.dataset.state = 'plp';
-    unlockBodyScroll();
-    // Reset the prototype to a clean state next time
+    // Reset the prototype to a clean state if user was in PDP
     if (window.protoApi && window.protoApi.exitPDP) window.protoApi.exitPDP();
+    morphPrototypeToPlp();
   });
 }

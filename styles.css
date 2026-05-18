@@ -562,7 +562,9 @@ body.plp-body {
 .card__img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* `contain` matches the prototype's `.bag__img` so the morph handoff
+     renders the image identically — no jump in scale at the end. */
+  object-fit: contain;
   display: block;
 }
 .card__heart {
@@ -767,17 +769,34 @@ body[data-state="morphing"] .card--is-source .card__media {
   background: #ffffff;
 }
 
-/* Prototype detail elements (year, bag name, strip, buy bar) are HELD
-   invisible throughout the morphing phase. Only after JS flips state
-   to "browse" do their per-element opacity transitions fade them in.
-   The .hdr (logo + context line) is intentionally NOT here — its
-   opacity stays 1, riding on the parent .app's gradual fade-in so the
-   Vestiaire logo emerges in lockstep with the PLP logo fading out. */
-body[data-state="morphing"] .app .year,
+/* Prototype detail elements are HELD invisible throughout the morphing
+   phase. Crucially we override their per-element transitions with
+   `transition: 0ms` so they SNAP to opacity 0 the instant the state
+   changes — no fade-out from their previous opacity, no peek-through.
+   When state flips to "browse" the rule no longer applies and the
+   default transitions fire, fading the elements in. */
+body[data-state="morphing"] .app .year {
+  opacity: 0;
+  transition: transform 500ms var(--easing) 50ms, opacity 0ms;
+}
 body[data-state="morphing"] .app .bagname,
 body[data-state="morphing"] .app .strip,
 body[data-state="morphing"] .app .buybar {
   opacity: 0;
+  transition: opacity 0ms;
+}
+
+/* The .hdr (logo + context line) is intentionally NOT held at opacity 0
+   — the logo rides the parent .app's gradual fade-in so it emerges in
+   lockstep with the PLP logo. BUT the context line ("chanel bag · 247
+   results") should NOT appear during the morph (it's the prototype's
+   own copy bleeding in). Hide it for the duration. */
+.app .hdr__context {
+  transition: opacity 300ms var(--easing) 250ms;
+}
+body[data-state="morphing"] .app .hdr__context {
+  opacity: 0;
+  transition: opacity 0ms;
 }
 
 /* ---------- MORPH CLONE ------------------------------------- */
@@ -794,7 +813,10 @@ body[data-state="morphing"] .app .buybar {
 .morph-clone img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* Matches PLP card AND prototype .bag__img — same rendering throughout
+     so the start (over the tile) and the end (handing off to .bag) are
+     pixel-identical. No flash. */
+  object-fit: contain;
   display: block;
 }
 
@@ -820,3 +842,16 @@ body[data-state="browse"] .plp-back { display: block; }
 /* The .app's internal .back arrow (browse→PDP exit) and .plp-back must
    not collide: .back only shows in PDP, .plp-back only in browse — so
    one or the other, never both. */
+
+/* ===============================================================
+   PHASE A: clone becomes the permanent bag — no handoff
+   The prototype's internal .bag__img--a/--b elements are no longer
+   the visible image; they stay as hidden layout placeholders so
+   script.js (which still writes to them on year-scrub) doesn't break.
+   The morph-clone (positioned over the .bag's screen rect) is the
+   one and only visible bag image, from morph to back-to-PLP.
+   =============================================================== */
+.bag__img--a,
+.bag__img--b {
+  opacity: 0 !important;        /* never show — clone is the bag */
+}
