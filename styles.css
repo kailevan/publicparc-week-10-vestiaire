@@ -1,0 +1,377 @@
+/* ---------------------------------------------------------------
+   week 10 — vestiaire collective × year dial
+   single hero control. one bag at a time. browse ↔ pdp morph.
+--------------------------------------------------------------- */
+
+/* Fonts ----------------------------------------------------------
+   Real Vestiaire stack: Helvetica Now Text + Albra (Display).
+   Drop real font files into /assets/fonts/ and the @font-face
+   blocks below will pick them up. Google Fonts loaded as fallback. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500&display=swap');
+
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('assets/fonts/HelveticaNowText-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('assets/fonts/HelveticaNowText-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('assets/fonts/HelveticaNowText-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Albra';
+  src: url('assets/fonts/Albra-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Base ----------------------------------------------------------- */
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --fg-soft: #8a8a8a;
+  --hairline: #e5e5e5;
+  --sans: 'Helvetica Now Text', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --serif: 'Albra Display', 'Albra', 'DM Serif Display', 'Times New Roman', serif;
+
+  --easing: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --morph-dur: 600ms;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+body { user-select: none; -webkit-user-select: none; }
+
+/* App container — fixed to viewport, 9:16-friendly */
+.app {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows:
+    auto       /* header */
+    auto       /* year */
+    1fr        /* stage */
+    auto       /* bag name */
+    auto;      /* dial */
+  padding: env(safe-area-inset-top, 16px) 0 env(safe-area-inset-bottom, 16px);
+}
+
+/* Header ---------------------------------------------------------- */
+.hdr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 24px 0;
+  /* Morph cascade: header releases first (0–250ms). */
+  transition: opacity 250ms var(--easing) 0ms;
+}
+
+.hdr__logo {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+}
+
+.hdr__context {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--fg-soft);
+  font-weight: 400;
+}
+
+/* Year (giant Albra) --------------------------------------------- */
+.year {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(80px, 22vw, 140px);
+  line-height: 1;
+  text-align: center;
+  letter-spacing: -0.02em;
+  margin-top: 18px;
+  font-feature-settings: "lnum" 1;
+  /* Morph cascade: year shrinks slowly (50–550ms). */
+  transition: transform 500ms var(--easing) 50ms;
+  will-change: transform;
+}
+
+/* Stage (the bag / editorial image area) ------------------------ */
+.stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 32px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stage__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bag {
+  position: relative;
+  width: 78%;
+  aspect-ratio: 1 / 1;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* Morph cascade: bag image grows slowly (50–550ms), parallel with year shrink. */
+  transition:
+    width 500ms var(--easing) 50ms,
+    transform 500ms var(--easing) 50ms;
+  will-change: width, transform;
+}
+
+.bag__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 320ms ease;
+  will-change: opacity;
+  pointer-events: none;
+}
+
+.bag__img--a.is-visible,
+.bag__img--b.is-visible { opacity: 1; }
+
+/* Bag name -------------------------------------------------------- */
+.bagname {
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+  text-align: center;
+  padding: 14px 24px 0;
+  font-weight: 400;
+  /* Morph cascade: bag name fades fast, gets out of way (0–250ms). */
+  transition: opacity 250ms var(--easing) 0ms;
+}
+
+/* Magnetic year strip --------------------------------------------
+   A horizontal rail of year ticks scrolls past a fixed center
+   indicator. Pull → year ticks past center → snap to nearest on
+   release. Same strip handles editorial slides in PDP. */
+.strip {
+  position: relative;
+  height: 64px;
+  margin: 12px 0 18px;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+}
+
+.strip:active { cursor: grabbing; }
+
+.strip__rail {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  height: calc(100% - 14px);
+  will-change: transform, opacity;
+  user-select: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms var(--easing) 140ms;
+}
+
+/* Active rail per app mode */
+.app[data-mode="browse"] .strip__rail--browse { opacity: 1; }
+.app[data-mode="pdp"]    .strip__rail--pdp    { opacity: 1; }
+
+/* The fixed center reference — a thin black vertical hairline
+   slightly taller than the major ticks. */
+.strip__indicator {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  bottom: 14px;
+  width: 1px;
+  background: var(--fg);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft fade at the strip edges so ticks don't snap visually
+   into existence; gives the picker a "wheel" depth. */
+.strip__fade {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 56px;
+  pointer-events: none;
+  z-index: 1;
+}
+.strip__fade--left  { left: 0;  background: linear-gradient(to right, var(--bg), rgba(255,255,255,0)); }
+.strip__fade--right { right: 0; background: linear-gradient(to left,  var(--bg), rgba(255,255,255,0)); }
+
+/* Each tick is positioned absolutely along the rail. JS computes
+   the rail width and the per-tick left offset (= year - 1955) * pxPerYear). */
+.tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 10px;
+  background: var(--hairline);
+  transform: translateX(-50%);
+}
+.tick--major {
+  height: 18px;
+  width: 1px;
+  background: var(--fg);
+}
+.tick__label {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--fg-soft);
+  white-space: nowrap;
+}
+.tick--editorial {
+  height: 14px;
+  background: var(--fg);
+}
+.tick--editorial .tick__label {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+  font-size: 9px;
+  top: 20px;
+}
+
+/* Back arrow (PDP only) ----------------------------------------- */
+.back {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 16px) + 16px);
+  left: 18px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  /* Morph cascade: back arrow arrives last (280–580ms). */
+  transition: opacity 300ms var(--easing) 280ms;
+  z-index: 10;
+}
+
+.back svg { width: 100%; height: 100%; display: block; }
+
+/* Buy bar (PDP only) -------------------------------------------- */
+.buybar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  /* Morph cascade: buy bar slides in last with the back arrow (280–580ms). */
+  transition:
+    height 300ms var(--easing) 280ms,
+    opacity 300ms var(--easing) 280ms;
+}
+
+.buybar__price {
+  font-family: var(--sans);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+
+.buybar__btn {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  padding: 13px 26px;
+  cursor: pointer;
+  transition: opacity 180ms ease;
+}
+
+.buybar__btn:active { opacity: 0.7; }
+
+/* PDP mode toggles ---------------------------------------------- */
+.app[data-mode="pdp"] .hdr {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app[data-mode="pdp"] .bagname {
+  opacity: 0;
+}
+
+.app[data-mode="pdp"] .bag {
+  width: 92%;
+}
+
+.app[data-mode="pdp"] .back {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app[data-mode="pdp"] .buybar {
+  height: 56px;
+  opacity: 1;
+}
+
+.app[data-mode="pdp"] .year {
+  transform: scale(0.85);
+}
+
+/* No-touch hint for video recording — kept invisible by default */
+.app[data-debug="true"]::after {
+  content: attr(data-mode);
+  position: fixed;
+  top: 4px; right: 8px;
+  font-size: 10px;
+  color: rgba(0,0,0,0.3);
+}

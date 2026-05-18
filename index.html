@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>vestiaire collective — chanel bag</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app" data-mode="browse">
+
+    <!-- Header -->
+    <header class="hdr">
+      <img class="hdr__logo" src="assets/vestiaire_logo.png" alt="vestiaire collective" />
+      <div class="hdr__context">chanel bag · <span class="hdr__count">247</span> results</div>
+    </header>
+
+    <!-- Back arrow (PDP only) -->
+    <button class="back" type="button" aria-label="Back to results">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 18 L9 12 L15 6" />
+      </svg>
+    </button>
+
+    <!-- Year (giant, Albra serif) -->
+    <div class="year" aria-live="polite">1955</div>
+
+    <!-- Image stage -->
+    <div class="stage">
+      <div class="stage__inner">
+        <!-- Browse: bag image -->
+        <div class="bag" id="bagLayer">
+          <img class="bag__img bag__img--a" alt="" />
+          <img class="bag__img bag__img--b" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Bag name -->
+    <div class="bagname">2.55 · Lambskin</div>
+
+    <!-- Buy bar (PDP only) -->
+    <div class="buybar">
+      <span class="buybar__price">€4,200</span>
+      <button class="buybar__btn" type="button">Claim</button>
+    </div>
+
+    <!-- Magnetic year strip (Week 8 picker style)
+         Two rails, one always visible. Crossfade on mode change. -->
+    <div class="strip" id="strip" role="slider" aria-valuemin="1955" aria-valuemax="2026" aria-valuenow="1955" tabindex="0">
+      <div class="strip__indicator" aria-hidden="true"></div>
+      <div class="strip__rail strip__rail--browse" id="stripBrowse"></div>
+      <div class="strip__rail strip__rail--pdp"    id="stripPdp"></div>
+      <div class="strip__fade strip__fade--left" aria-hidden="true"></div>
+      <div class="strip__fade strip__fade--right" aria-hidden="true"></div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

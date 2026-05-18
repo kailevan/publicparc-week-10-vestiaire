@@ -1,0 +1,7 @@
+.DS_Store
+.playwright-mcp/
+week10_*.png
+
+# Raw font folder Kai dropped in — we already copied the fonts we need
+# into assets/fonts/ with cleaner names. Keep these out of the repo.
+Helvetica Now Text_HelveticaNowText_Albra/
