@@ -129,9 +129,9 @@ body { user-select: none; -webkit-user-select: none; }
   letter-spacing: -0.02em;
   margin-top: 18px;
   font-feature-settings: "lnum" 1;
-  /* Transform animates on browse↔PDP. Opacity animates on PLP→browse morph. */
+  /* Transform: browse↔PDP scale. Opacity: PLP→browse reveal (year leads). */
   transition: transform 500ms var(--easing) 50ms,
-              opacity 400ms var(--easing) 250ms;
+              opacity 350ms var(--easing) 50ms;
   will-change: transform;
 }
 
@@ -195,8 +195,10 @@ body { user-select: none; -webkit-user-select: none; }
   text-align: center;
   padding: 14px 24px 0;
   font-weight: 400;
-  /* Morph cascade: bag name fades fast, gets out of way (0–250ms). */
-  transition: opacity 250ms var(--easing) 0ms;
+  /* Two roles:
+     - browse↔PDP fade (250ms, no delay) — fades out fast in PDP
+     - PLP→browse reveal (300ms, 100ms delay) — comes in just after year */
+  transition: opacity 300ms var(--easing) 100ms;
 }
 
 /* Magnetic year strip --------------------------------------------
@@ -211,8 +213,8 @@ body { user-select: none; -webkit-user-select: none; }
   touch-action: none;
   cursor: grab;
   outline: none;
-  /* Opacity transition only relevant during PLP→browse morph reveal. */
-  transition: opacity 400ms var(--easing) 250ms;
+  /* Opacity reveal during PLP→browse morph — strip comes in last. */
+  transition: opacity 400ms var(--easing) 200ms;
 }
 
 .strip:active { cursor: grabbing; }
@@ -693,11 +695,14 @@ body.plp-body {
    SPA STATE MACHINE — PLP / morphing / browse / pdp
    =============================================================== */
 
-/* App default: invisible but laid out (we need to measure .bag rect) */
+/* App default: invisible but laid out (we need to measure .bag rect).
+   On state→morphing the whole prototype fades in over 350ms, so the
+   Vestiaire logo gracefully appears as the PLP fades out. */
 .app {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 350ms var(--easing), visibility 0ms 350ms;
 }
 
 body[data-state="morphing"] .app,
@@ -706,6 +711,7 @@ body[data-state="pdp"] .app {
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
+  transition: opacity 350ms var(--easing), visibility 0ms 0ms;
 }
 
 /* In prototype mode, PLP is fully removed from layout */
@@ -716,7 +722,11 @@ body[data-state="pdp"] .plp-view {
 
 /* ---------- MORPHING STATE: choreographed fade --------------- */
 
-/* Fade PLP chrome out fast — it's leaving the experience */
+/* PLP elements fade to white during phase 1 (0–350ms). The PLP logo bar
+   is included — and the prototype's .hdr (with the same Vestiaire logo)
+   is fading IN at the same time via the parent .app's opacity transition.
+   Because both logos sit at the same screen Y (top of viewport, ~18px in)
+   they cross-fade visually as a single continuous logo. */
 body[data-state="morphing"] .plp__logo-bar,
 body[data-state="morphing"] .plp__title,
 body[data-state="morphing"] .plp__chips,
@@ -726,33 +736,47 @@ body[data-state="morphing"] .plp__usp,
 body[data-state="morphing"] .plp__bottomnav {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 250ms var(--easing);
+  transition: opacity 300ms var(--easing);
 }
 
-/* Non-source tiles fade individually */
+/* Non-source tiles fade out fully — they're leaving the experience */
 body[data-state="morphing"] .plp__grid .card:not(.card--is-source) {
   opacity: 0;
   transition: opacity 300ms var(--easing);
 }
 
-/* Source tile: its image becomes invisible (the clone occupies its place
-   in viewport-fixed coordinates and animates to the prototype's bag rect),
-   text fades out. */
-.card--is-source .card__img {
+/* Source tile during morph:
+   - Image hidden (the clone is on top, at the same screen rect)
+   - Heart button hidden
+   - Card text details (CHANEL / name / price / location) fade out
+   - Card media background gracefully fades cream → white, matched
+     to the clone's own background fade. By end of phase 1 the tile
+     visually IS the clone on white. */
+.card--is-source .card__img,
+.card--is-source .card__heart {
   visibility: hidden;
 }
 body[data-state="morphing"] .card--is-source .card__details {
   opacity: 0;
   transition: opacity 200ms var(--easing);
 }
+.card--is-source .card__media {
+  transition: background 300ms var(--easing);
+}
+body[data-state="morphing"] .card--is-source .card__media {
+  background: #ffffff;
+}
 
-/* During morph, the prototype chrome (year, bag name, strip, header) starts
-   hidden. When state transitions to "browse" the per-element opacity rules
-   (with their delayed transitions) take over and reveal them gracefully. */
+/* Prototype detail elements (year, bag name, strip, buy bar) are HELD
+   invisible throughout the morphing phase. Only after JS flips state
+   to "browse" do their per-element opacity transitions fade them in.
+   The .hdr (logo + context line) is intentionally NOT here — its
+   opacity stays 1, riding on the parent .app's gradual fade-in so the
+   Vestiaire logo emerges in lockstep with the PLP logo fading out. */
 body[data-state="morphing"] .app .year,
 body[data-state="morphing"] .app .bagname,
 body[data-state="morphing"] .app .strip,
-body[data-state="morphing"] .app .hdr {
+body[data-state="morphing"] .app .buybar {
   opacity: 0;
 }
 

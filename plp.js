@@ -79,7 +79,30 @@ if (grid) {
 // ---------- Morph: tile → prototype bag --------------------------
 const morphClone = document.getElementById('morphClone');
 const morphCloneImg = morphClone ? morphClone.querySelector('img') : null;
-const MORPH_DURATION = 700;     // ms
+
+/* ---------------------------------------------------------------
+   Morph choreography — 3 strict phases, no overlap, premium feel.
+   The image is the only thing that visibly moves; everything around
+   it turns white first, then the image expands, then the prototype
+   UI fades in. Only the Vestiaire logo persists throughout.
+
+   Timeline (ms):
+     0   …  350   PLP elements + tile background fade to white.
+                  Prototype hdr (logo) cross-fades in.
+                  Clone is locked at tile rect, white background.
+     350 …  1100  Clone expands from tile rect → bag rect.
+                  Nothing else changes. Ease-out-quint.
+     1100         Switch state → browse. Year, bagname, strip start
+                  their delayed opacity transitions (fade in).
+     1100 …  1400 Prototype UI reveals.
+     1180 …  1430 Clone fades out, underlying bag image is exposed
+                  (identical image, same position — no visible swap).
+--------------------------------------------------------------- */
+const T_FADE_PLP      = 350;          // phase 1 duration
+const T_EXPAND        = 750;          // phase 2 duration (clone expansion)
+const T_BUFFER        = 60;           // small breath at the top of phase 3
+const T_TOTAL         = T_FADE_PLP + T_EXPAND + 500;
+const EASE_EXPAND     = 'cubic-bezier(0.16, 1, 0.3, 1)';  // ease-out-quint, premium deceleration
 
 function lockBodyScroll() {
   document.documentElement.style.overflow = 'hidden';
@@ -98,19 +121,19 @@ function morphTileToPrototype(tile) {
   const year = parseInt(tile.dataset.year, 10) || 2008;
   const bagName = tile.dataset.bagName || '';
 
-  // 1. Capture start rect (tile image's current viewport position)
+  // Capture start rect
   const startRect = tileImg.getBoundingClientRect();
 
-  // 2. Mark the source tile so CSS hides its image/details cleanly
+  // Mark the source tile (CSS hides its image so the clone is the only image)
   tile.classList.add('card--is-source');
 
-  // 3. Switch into 'morphing' state — this makes the prototype DOM
-  //    layout (still invisible) so we can measure where the bag will sit.
+  // Switch into morphing state so the prototype DOM lays out
   document.body.dataset.state = 'morphing';
   lockBodyScroll();
 
-  // 4. Pre-set the prototype to the target year and force its bag image
-  //    to be the tile's image (so the underlying handoff is seamless)
+  // Pre-warm the prototype: set year + bag image src + bag name
+  // All prototype UI (year, strip, bagname) is held at opacity 0 by CSS
+  // until state flips to "browse".
   window.protoApi.setYear(year);
   const bagLayer = window.protoApi.getBagEl();
   const bagImgA = bagLayer.querySelector('.bag__img--a');
@@ -118,16 +141,15 @@ function morphTileToPrototype(tile) {
   bagImgA.src = imgSrc;
   bagImgA.classList.add('is-visible');
   bagImgB.classList.remove('is-visible');
-  bagImgA.style.opacity = '0';   // hide until clone has settled
-  // Also update bag name / price displayed
+  bagImgA.style.opacity = '0';
   const bagnameEl = document.querySelector('.bagname');
   if (bagnameEl) bagnameEl.textContent = bagName;
 
-  // 5. Measure target rect (where .bag sits inside the prototype layout)
-  const bagEl = window.protoApi.getBagEl();
-  const targetRect = bagEl.getBoundingClientRect();
+  // Measure target rect (the bag's eventual position in the prototype)
+  const targetRect = bagLayer.getBoundingClientRect();
 
-  // 6. Position the clone at the tile rect
+  // Position the clone over the source tile (same rect, same image).
+  // Start the clone's background as cream (matches the PLP card media bg).
   morphCloneImg.src = imgSrc;
   morphClone.style.transition = 'none';
   morphClone.style.left = `${startRect.left}px`;
@@ -135,32 +157,52 @@ function morphTileToPrototype(tile) {
   morphClone.style.width = `${startRect.width}px`;
   morphClone.style.height = `${startRect.height}px`;
   morphClone.style.opacity = '1';
+  morphClone.style.background = '#f1efe9';
   morphClone.classList.add('is-active');
+  void morphClone.offsetWidth;        // force reflow
 
-  // Trigger reflow
-  void morphClone.offsetWidth;
+  // PHASE 1 — within first 350ms, fade the clone background to white
+  //          in lockstep with the PLP turning white.
+  requestAnimationFrame(() => {
+    morphClone.style.transition = `background ${T_FADE_PLP}ms ease`;
+    morphClone.style.background = '#ffffff';
+  });
 
-  // 7. Animate the clone to the target rect
-  const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
-  morphClone.style.transition = `left ${MORPH_DURATION}ms ${ease}, top ${MORPH_DURATION}ms ${ease}, width ${MORPH_DURATION}ms ${ease}, height ${MORPH_DURATION}ms ${ease}`;
-  morphClone.style.left = `${targetRect.left}px`;
-  morphClone.style.top = `${targetRect.top}px`;
-  morphClone.style.width = `${targetRect.width}px`;
-  morphClone.style.height = `${targetRect.height}px`;
-
-  // 8. After the morph completes, hand off to the prototype
+  // PHASE 2 — at T_FADE_PLP, kick off the expansion.
   setTimeout(() => {
-    bagImgA.style.opacity = '1';                // real bag becomes visible
-    morphClone.style.transition = 'opacity 200ms ease';
+    morphClone.style.transition = [
+      `left ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `top ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `width ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `height ${T_EXPAND}ms ${EASE_EXPAND}`,
+    ].join(', ');
+    morphClone.style.left   = `${targetRect.left}px`;
+    morphClone.style.top    = `${targetRect.top}px`;
+    morphClone.style.width  = `${targetRect.width}px`;
+    morphClone.style.height = `${targetRect.height}px`;
+  }, T_FADE_PLP);
+
+  // PHASE 3 — once clone has fully landed, switch state to browse
+  //          (CSS transitions reveal year, bagname, strip).
+  setTimeout(() => {
+    document.body.dataset.state = 'browse';
+  }, T_FADE_PLP + T_EXPAND + T_BUFFER);
+
+  // Crossfade the clone out into the underlying real bag image
+  setTimeout(() => {
+    bagImgA.style.opacity = '1';
+    morphClone.style.transition = 'opacity 250ms ease';
     morphClone.style.opacity = '0';
-    document.body.dataset.state = 'browse';     // PLP fully hidden now
-    setTimeout(() => {
-      morphClone.classList.remove('is-active');
-      morphClone.style.transition = '';
-      morphClone.style.opacity = '';
-      tile.classList.remove('card--is-source'); // cleanup
-    }, 220);
-  }, MORPH_DURATION + 30);
+  }, T_FADE_PLP + T_EXPAND + T_BUFFER + 80);
+
+  // Cleanup
+  setTimeout(() => {
+    morphClone.classList.remove('is-active');
+    morphClone.style.transition = '';
+    morphClone.style.opacity = '';
+    morphClone.style.background = '';
+    tile.classList.remove('card--is-source');
+  }, T_TOTAL);
 }
 
 // Tile click handler — only the non-heart area triggers morph
