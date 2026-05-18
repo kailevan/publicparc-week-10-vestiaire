@@ -398,9 +398,22 @@ body.plp-body {
   min-height: 100vh;
 }
 
+/* Logo bar ------------------------------------------------------- */
+.plp__logo-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 24px 8px;
+}
+.plp__logo {
+  height: 30px;                  /* matches the year-dial prototype */
+  width: auto;
+  object-fit: contain;
+}
+
 /* Title block ---------------------------------------------------- */
 .plp__title {
-  padding: 24px 20px 8px;
+  padding: 16px 20px 8px;
 }
 .plp__h1 {
   font-family: var(--serif);
