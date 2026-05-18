@@ -7,22 +7,25 @@
 --------------------------------------------------------------- */
 
 // ---------- Data ----------------------------------------------------
+// Milestone bags. The imgs now point at PLP grid jpgs so every year
+// the user scrubs to has a real Chanel photograph as its "placeholder".
+// Year 2008 keeps the original Modern Chain webp (the demo's hero bag).
 const BAGS = [
-  { year: 1955, img: 'assets/bags/1955.jpg', name: '2.55 · Lambskin',        price: '€7,800' },
-  { year: 1983, img: 'assets/bags/1983.jpg', name: '11.12 Classic · Caviar', price: '€5,400' },
-  { year: 1990, img: 'assets/bags/1990.jpg', name: 'Diana · Lambskin',       price: '€4,650' },
-  { year: 1994, img: 'assets/bags/1994.jpg', name: 'Maxi Jumbo · Caviar',    price: '€4,200' },
-  { year: 1996, img: 'assets/bags/1996.jpg', name: 'Vanity · Patent',        price: '€3,900' },
-  { year: 1999, img: 'assets/bags/1999.jpg', name: 'Kelly Charm · Lambskin', price: '€4,800' },
-  { year: 2003, img: 'assets/bags/2003.jpg', name: 'Cambon Tote · Lambskin', price: '€3,400' },
-  { year: 2008, img: 'assets/bags/2008.webp', name: 'Modern Chain · Caviar', price: '€3,100' },
-  { year: 2011, img: 'assets/bags/2011.jpg', name: 'Boy · Calfskin',         price: '€3,800' },
-  { year: 2014, img: 'assets/bags/2014.jpg', name: 'Boy Brick · Calfskin',   price: '€3,600' },
-  { year: 2017, img: 'assets/bags/2017.jpg', name: 'Gabrielle · Calfskin',   price: '€3,950' },
-  { year: 2019, img: 'assets/bags/2019.jpg', name: '19 · Goatskin',          price: '€5,400' },
-  { year: 2021, img: 'assets/bags/2021.jpg', name: '22 · Calfskin',          price: '€5,800' },
-  { year: 2023, img: 'assets/bags/2023.jpg', name: 'Coco Handle · Caviar',   price: '€6,200' },
-  { year: 2026, img: 'assets/bags/2026.jpg', name: 'Classic Flap · Caviar',  price: '€10,400' },
+  { year: 1955, img: 'assets/plp/14.jpg',     name: '2.55 · Lambskin',           price: '€7,800' },
+  { year: 1983, img: 'assets/plp/04.jpg',     name: '11.12 Classic · Caviar',    price: '€5,400' },
+  { year: 1990, img: 'assets/plp/07.jpg',     name: 'Diana · Lambskin',          price: '€4,650' },
+  { year: 1994, img: 'assets/plp/09.jpg',     name: 'Bowling Bag · Cloth',       price: '€4,200' },
+  { year: 1996, img: 'assets/plp/10.jpg',     name: 'Petite Shopping · Leather', price: '€3,900' },
+  { year: 1999, img: 'assets/plp/05.jpg',     name: 'Kelly Charm · Lambskin',    price: '€4,800' },
+  { year: 2003, img: 'assets/plp/06.jpg',     name: 'Cambon Tote · Lambskin',    price: '€3,400' },
+  { year: 2008, img: 'assets/bags/2008.webp', name: 'Modern Chain · Caviar',     price: '€3,100' },
+  { year: 2011, img: 'assets/plp/12.jpg',     name: 'Boy · Calfskin',            price: '€3,800' },
+  { year: 2014, img: 'assets/plp/03.jpg',     name: 'Wallet on Chain · Leather', price: '€3,600' },
+  { year: 2017, img: 'assets/plp/08.jpg',     name: 'Coco Handle · Calfskin',    price: '€3,950' },
+  { year: 2019, img: 'assets/plp/15.jpg',     name: '19 · Goatskin',             price: '€5,400' },
+  { year: 2021, img: 'assets/plp/13.jpg',     name: '22 · Calfskin',             price: '€5,800' },
+  { year: 2023, img: 'assets/plp/16.jpg',     name: 'Timeless · Caviar',         price: '€6,200' },
+  { year: 2026, img: 'assets/plp/17.jpg',     name: '2.55 · Caviar',             price: '€10,400' },
 ];
 
 const HERO_YEAR = 1996;
@@ -39,11 +42,17 @@ const EDITORIAL_CURATED = {
   ],
 };
 
+// Editorial slides per bag year. Falls back to PLP grid images so every
+// year has 5 visible slides for the PDP scrubber — deterministic rotation
+// based on the year ensures the same bag always shows the same images.
 function getSlidesFor(year) {
   const curated = EDITORIAL_CURATED[year] || [];
+  const baseIdx = ((year - 1955) * 3) % 18; // 0..17, varies per year
   return DEFAULT_SLIDE_LABELS.map((label, i) => {
     if (curated[i]) return curated[i];
-    return { src: `assets/editorial/${year}-0${i+1}-${label.toLowerCase()}.jpg`, label };
+    const plpIdx = ((baseIdx + i * 4) % 18) + 1; // step around the 18 PLP images
+    const padded = plpIdx < 10 ? `0${plpIdx}` : `${plpIdx}`;
+    return { src: `assets/plp/${padded}.jpg`, label };
   });
 }
 
@@ -156,19 +165,34 @@ function editorialPlaceholderURI(label, year) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 
-// ---------- Image cross-fade ---------------------------------------
+// ---------- Image display ------------------------------------------
+// Updates BOTH the legacy .bag__img--a/--b layers (kept for layout
+// continuity even though they're forced opacity 0 by CSS) AND the
+// morph-clone img — which is the bag image the user actually sees in
+// browse / PDP after entering from the PLP.
 function showImageURL(url) {
+  // Legacy crossfade (invisible — bag__imgs are forced opacity 0 in CSS
+  // by .bag__img--a/--b override, but we keep this wired so the original
+  // dual-layer logic is intact if we ever re-enable them).
   const front = frontLayer === 'a' ? imgA : imgB;
   const back  = frontLayer === 'a' ? imgB : imgA;
-  if (front.dataset.url === url) return;
-  back.onload = () => {
-    back.classList.add('is-visible');
-    front.classList.remove('is-visible');
-    frontLayer = frontLayer === 'a' ? 'b' : 'a';
-  };
-  back.dataset.url = url;
-  back.onerror = null;
-  back.src = url;
+  if (front.dataset.url !== url) {
+    back.onload = () => {
+      back.classList.add('is-visible');
+      front.classList.remove('is-visible');
+      frontLayer = frontLayer === 'a' ? 'b' : 'a';
+    };
+    back.dataset.url = url;
+    back.onerror = null;
+    back.src = url;
+  }
+
+  // The morph-clone img is the visible bag during browse / PDP.
+  // Update it on every showImageURL call.
+  const stageImg = document.querySelector('#morphClone img');
+  if (stageImg && stageImg.src !== url) {
+    stageImg.src = url;
+  }
 }
 
 function showBag(bag) {
