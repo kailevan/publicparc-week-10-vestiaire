@@ -4,32 +4,135 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#ffffff" />
-  <title>vestiaire collective — chanel bag</title>
+  <title>Chanel bag — Vestiaire Collective</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-state="plp">
+
+  <!-- ============================================================
+       PLP VIEW (entry)
+       ============================================================ -->
+  <section class="plp-view" id="plpView">
+
+    <header class="plp__logo-bar">
+      <img class="plp__logo" src="assets/vestiaire_logo.png" alt="vestiaire collective" />
+    </header>
+
+    <section class="plp__title">
+      <h1 class="plp__h1">Chanel Bag</h1>
+      <p class="plp__count">— 10000 Results</p>
+    </section>
+
+    <ul class="plp__chips" id="plpChips">
+      <li class="chip"><span class="chip__thumb" data-thumb="01"></span><span class="chip__label">vintage</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="04"></span><span class="chip__label">black</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="08"></span><span class="chip__label">mini</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="09"></span><span class="chip__label">pink</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="02"></span><span class="chip__label">white</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="14"></span><span class="chip__label">timeless</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="03"></span><span class="chip__label">red</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="18"></span><span class="chip__label">brown</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="01"></span><span class="chip__label">classic</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="05"></span><span class="chip__label">flap</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="07"></span><span class="chip__label">denim</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="13"></span><span class="chip__label">tweed</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="06"></span><span class="chip__label">silver</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="12"></span><span class="chip__label">blue</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="17"></span><span class="chip__label">yellow</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="11"></span><span class="chip__label">caviar</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="10"></span><span class="chip__label">green</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="04"></span><span class="chip__label">jumbo</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="15"></span><span class="chip__label">gold</span></li>
+      <li class="chip"><span class="chip__thumb" data-thumb="16"></span><span class="chip__label">beige</span></li>
+    </ul>
+
+    <ul class="plp__hotfilters" id="plpHotfilters">
+      <li><button class="hot-filter">Sort By <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Duty Free</button></li>
+      <li><button class="hot-filter">Category <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Designer <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Condition <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Price <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Material <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Color <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+      <li><button class="hot-filter">Filters <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
+    </ul>
+
+    <button class="plp__savesearch" type="button">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M6 4 H18 V21 L12 17 L6 21 Z"/>
+      </svg>
+      <span>Save this search</span>
+    </button>
+
+    <ul class="plp__grid" id="plpGrid"></ul>
+
+    <section class="plp__usp">
+      <div class="usp">
+        <svg class="usp__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3">
+          <rect x="5" y="7" width="22" height="18" rx="1"/>
+          <path d="M5 11 H27"/>
+          <text x="16" y="20" text-anchor="middle" font-size="9" font-family="serif" stroke="none" fill="currentColor">$</text>
+        </svg>
+        <h3 class="usp__title">Negotiate your price</h3>
+        <p class="usp__body">Go ahead. Make an offer for an even better price.</p>
+      </div>
+      <div class="usp">
+        <svg class="usp__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3">
+          <path d="M16 4 L26 8 V16 C26 22 20 27 16 28 C12 27 6 22 6 16 V8 Z"/>
+          <path d="M12 16 L15 19 L21 13" stroke-width="1.5"/>
+        </svg>
+        <h3 class="usp__title">Expert Authentication</h3>
+        <p class="usp__body">Get peace of mind with physical authentication.</p>
+      </div>
+      <div class="usp">
+        <svg class="usp__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3">
+          <circle cx="16" cy="16" r="12"/>
+          <path d="M10 16 H22 M16 10 V22"/>
+        </svg>
+        <h3 class="usp__title">Buyer Protection</h3>
+        <p class="usp__body">Full refund if your item is not as described.</p>
+      </div>
+      <div class="usp">
+        <svg class="usp__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3">
+          <path d="M5 18 L12 11 L18 17 L27 8"/>
+          <path d="M21 8 H27 V14"/>
+        </svg>
+        <h3 class="usp__title">Trade in your wardrobe</h3>
+        <p class="usp__body">Sell your pre-loved pieces and refresh your closet.</p>
+      </div>
+    </section>
+
+    <nav class="plp__bottomnav">
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 11 L12 4 L21 11 V20 H14 V14 H10 V20 H3 Z"/></svg><span>Home</span></a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 21 C8 18 3 14 3 9 A4 4 0 0 1 12 7 A4 4 0 0 1 21 9 C21 14 16 18 12 21 Z"/></svg><span>Favorites</span></a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M12 8 V16 M8 12 H16"/></svg><span>Sell</span></a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 17 V11 A6 6 0 0 1 18 11 V17 L20 19 H4 Z"/><path d="M10 19 A2 2 0 0 0 14 19"/></svg><span>Notifications</span></a>
+      <a class="navitem" href="#"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21 C4 16 8 14 12 14 C16 14 20 16 20 21"/></svg><span>Me</span></a>
+    </nav>
+
+  </section>
+
+  <!-- ============================================================
+       PROTOTYPE VIEW (year-dial)
+       ============================================================ -->
   <main class="app" data-mode="browse">
 
-    <!-- Header -->
     <header class="hdr">
       <img class="hdr__logo" src="assets/vestiaire_logo.png" alt="vestiaire collective" />
       <div class="hdr__context">chanel bag · <span class="hdr__count">247</span> results</div>
     </header>
 
-    <!-- Back arrow (PDP only) -->
     <button class="back" type="button" aria-label="Back to results">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M15 18 L9 12 L15 6" />
       </svg>
     </button>
 
-    <!-- Year (giant, Albra serif) -->
-    <div class="year" aria-live="polite">1955</div>
+    <div class="year" aria-live="polite">2008</div>
 
-    <!-- Image stage -->
     <div class="stage">
       <div class="stage__inner">
-        <!-- Browse: bag image -->
         <div class="bag" id="bagLayer">
           <img class="bag__img bag__img--a" alt="" />
           <img class="bag__img bag__img--b" alt="" />
@@ -37,18 +140,14 @@
       </div>
     </div>
 
-    <!-- Bag name -->
-    <div class="bagname">2.55 · Lambskin</div>
+    <div class="bagname">Modern Chain · Caviar</div>
 
-    <!-- Buy bar (PDP only) -->
     <div class="buybar">
-      <span class="buybar__price">€4,200</span>
+      <span class="buybar__price">€3,100</span>
       <button class="buybar__btn" type="button">Claim</button>
     </div>
 
-    <!-- Magnetic year strip (Week 8 picker style)
-         Two rails, one always visible. Crossfade on mode change. -->
-    <div class="strip" id="strip" role="slider" aria-valuemin="1955" aria-valuemax="2026" aria-valuenow="1955" tabindex="0">
+    <div class="strip" id="strip" role="slider" aria-valuemin="1955" aria-valuemax="2026" aria-valuenow="2008" tabindex="0">
       <div class="strip__indicator" aria-hidden="true"></div>
       <div class="strip__rail strip__rail--browse" id="stripBrowse"></div>
       <div class="strip__rail strip__rail--pdp"    id="stripPdp"></div>
@@ -58,6 +157,23 @@
 
   </main>
 
+  <!-- ============================================================
+       MORPH CLONE (used during PLP → prototype transition)
+       ============================================================ -->
+  <div class="morph-clone" id="morphClone" aria-hidden="true">
+    <img alt="" />
+  </div>
+
+  <!-- ============================================================
+       BACK-TO-PLP BUTTON (from prototype browse mode)
+       ============================================================ -->
+  <button class="plp-back" id="plpBack" type="button" aria-label="Back to results">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18 L9 12 L15 6" />
+    </svg>
+  </button>
+
   <script src="script.js"></script>
+  <script src="plp.js"></script>
 </body>
 </html>

@@ -444,7 +444,18 @@ function init() {
 
 window.addEventListener('load', init);
 window.addEventListener('resize', () => {
-  // Re-center current selection on resize
   if (mode === 'browse') setYear(yearF);
   else setSlide(slideIdx);
 });
+
+// Expose for cross-script coordination with plp.js (PLP→prototype morph)
+window.protoApi = {
+  setYear,                 // (year, animate?) → jumps prototype to a year
+  exitPDP,                 // (no-op if already in browse)
+  enterBrowse() {
+    if (mode === 'pdp') exitPDP();
+    setYear(yearF);        // re-center after potential layout change
+  },
+  getBagEl() { return bagLayer; },
+  getYearEl() { return yearEl; },
+};

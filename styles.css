@@ -67,6 +67,18 @@ html, body {
   touch-action: none;
 }
 
+/* State-driven body scroll. PLP scrolls; prototype is fixed. */
+body[data-state="plp"] {
+  overflow: auto;
+  touch-action: pan-y;
+}
+body[data-state="morphing"],
+body[data-state="browse"],
+body[data-state="pdp"] {
+  overflow: hidden;
+  touch-action: none;
+}
+
 body { user-select: none; -webkit-user-select: none; }
 
 /* App container — fixed to viewport, 9:16-friendly */
@@ -117,8 +129,9 @@ body { user-select: none; -webkit-user-select: none; }
   letter-spacing: -0.02em;
   margin-top: 18px;
   font-feature-settings: "lnum" 1;
-  /* Morph cascade: year shrinks slowly (50–550ms). */
-  transition: transform 500ms var(--easing) 50ms;
+  /* Transform animates on browse↔PDP. Opacity animates on PLP→browse morph. */
+  transition: transform 500ms var(--easing) 50ms,
+              opacity 400ms var(--easing) 250ms;
   will-change: transform;
 }
 
@@ -198,6 +211,8 @@ body { user-select: none; -webkit-user-select: none; }
   touch-action: none;
   cursor: grab;
   outline: none;
+  /* Opacity transition only relevant during PLP→browse morph reveal. */
+  transition: opacity 400ms var(--easing) 250ms;
 }
 
 .strip:active { cursor: grabbing; }
@@ -673,3 +688,111 @@ body.plp-body {
   padding: 4px 8px;
 }
 .navitem svg { display: block; }
+
+/* ===============================================================
+   SPA STATE MACHINE — PLP / morphing / browse / pdp
+   =============================================================== */
+
+/* App default: invisible but laid out (we need to measure .bag rect) */
+.app {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-state="morphing"] .app,
+body[data-state="browse"] .app,
+body[data-state="pdp"] .app {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* In prototype mode, PLP is fully removed from layout */
+body[data-state="browse"] .plp-view,
+body[data-state="pdp"] .plp-view {
+  display: none;
+}
+
+/* ---------- MORPHING STATE: choreographed fade --------------- */
+
+/* Fade PLP chrome out fast — it's leaving the experience */
+body[data-state="morphing"] .plp__logo-bar,
+body[data-state="morphing"] .plp__title,
+body[data-state="morphing"] .plp__chips,
+body[data-state="morphing"] .plp__hotfilters,
+body[data-state="morphing"] .plp__savesearch,
+body[data-state="morphing"] .plp__usp,
+body[data-state="morphing"] .plp__bottomnav {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms var(--easing);
+}
+
+/* Non-source tiles fade individually */
+body[data-state="morphing"] .plp__grid .card:not(.card--is-source) {
+  opacity: 0;
+  transition: opacity 300ms var(--easing);
+}
+
+/* Source tile: its image becomes invisible (the clone occupies its place
+   in viewport-fixed coordinates and animates to the prototype's bag rect),
+   text fades out. */
+.card--is-source .card__img {
+  visibility: hidden;
+}
+body[data-state="morphing"] .card--is-source .card__details {
+  opacity: 0;
+  transition: opacity 200ms var(--easing);
+}
+
+/* During morph, the prototype chrome (year, bag name, strip, header) starts
+   hidden. When state transitions to "browse" the per-element opacity rules
+   (with their delayed transitions) take over and reveal them gracefully. */
+body[data-state="morphing"] .app .year,
+body[data-state="morphing"] .app .bagname,
+body[data-state="morphing"] .app .strip,
+body[data-state="morphing"] .app .hdr {
+  opacity: 0;
+}
+
+/* ---------- MORPH CLONE ------------------------------------- */
+.morph-clone {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  visibility: hidden;
+  background: #f1efe9;          /* same neutral as card media bg */
+  overflow: hidden;
+  will-change: left, top, width, height, opacity;
+}
+.morph-clone.is-active { visibility: visible; }
+.morph-clone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- BACK-TO-PLP BUTTON ------------------------------ */
+.plp-back {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 16px) + 16px);
+  left: 18px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  z-index: 100;
+  display: none;
+  padding: 4px;
+}
+.plp-back svg { width: 100%; height: 100%; display: block; }
+
+body[data-state="browse"] .plp-back { display: block; }
+
+/* The .app's internal .back arrow (browse→PDP exit) and .plp-back must
+   not collide: .back only shows in PDP, .plp-back only in browse — so
+   one or the other, never both. */
