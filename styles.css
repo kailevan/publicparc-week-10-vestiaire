@@ -858,3 +858,50 @@ body[data-state="browse"] .plp-back { display: block; }
 .bag__img--b {
   opacity: 0 !important;        /* never show — clone is the bag */
 }
+
+/* ===============================================================
+   v2 ONLY: "by year" filter chip styling
+   These classes are unique to index-v2.html — v1 (index.html) has
+   no .chip--year so these rules are inert there.
+   =============================================================== */
+
+/* Distinctive black-filled pill that signals "this isn't a normal
+   tag filter — it opens an interaction." */
+.chip--year {
+  background: #111;
+  border-color: #111;
+  cursor: pointer;
+}
+.chip--year .chip__thumb {
+  /* black bg so the thumb area reads as part of the dark pill;
+     image still loads via inline backgroundImage from JS */
+  background-color: #1a1a1a;
+}
+.chip--year .chip__label {
+  color: #fff;
+  letter-spacing: 0.06em;
+}
+
+/* During the chip→bag morph, hide the thumb (clone overlays it),
+   fade the label, fade the pill bg to white in lockstep with the
+   clone's own background fade. */
+.chip--is-source .chip__thumb { visibility: hidden; }
+.chip--is-source .chip__label {
+  opacity: 0;
+  transition: opacity 200ms var(--easing);
+}
+.chip--is-source {
+  transition: background-color 300ms var(--easing),
+              border-color 300ms var(--easing);
+}
+body[data-state="morphing"] .chip--is-source {
+  background-color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* In v2 the grid tiles do NOT trigger a morph — make them feel less
+   interactive (no pointer cursor on hover). They still load and
+   render the same; hearts still toggle. */
+body[data-state="plp"] .plp-view .plp__grid .card {
+  cursor: default;
+}
