@@ -42,17 +42,15 @@ const EDITORIAL_CURATED = {
   ],
 };
 
-// Editorial slides per bag year. Falls back to PLP grid images so every
-// year has 5 visible slides for the PDP scrubber — deterministic rotation
-// based on the year ensures the same bag always shows the same images.
+// Editorial slides per bag year. Slide 0 (Product) is always the bag
+// itself — handled in showEditorial. Slides 1-4 fall back to dark
+// typographic editorial cards (label + year, italic serif) so the
+// editorial layer is visually distinct from bag product photography.
 function getSlidesFor(year) {
   const curated = EDITORIAL_CURATED[year] || [];
-  const baseIdx = ((year - 1955) * 3) % 18; // 0..17, varies per year
   return DEFAULT_SLIDE_LABELS.map((label, i) => {
     if (curated[i]) return curated[i];
-    const plpIdx = ((baseIdx + i * 4) % 18) + 1; // step around the 18 PLP images
-    const padded = plpIdx < 10 ? `0${plpIdx}` : `${plpIdx}`;
-    return { src: `assets/plp/${padded}.jpg`, label };
+    return { src: editorialPlaceholderURI(label, year), label };
   });
 }
 
@@ -155,11 +153,11 @@ function placeholderURI(bag) {
 
 function editorialPlaceholderURI(label, year) {
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid meet">
-      <rect width="400" height="600" fill="#1a1a1a"/>
-      <g fill="#f6f4ef" font-family="Georgia, serif">
-        <text x="200" y="290" text-anchor="middle" font-size="22" font-weight="400" letter-spacing="3" font-style="italic">${label}</text>
-        <text x="200" y="330" text-anchor="middle" font-size="14" letter-spacing="6">${year}</text>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+      <rect width="400" height="400" fill="#0d0d0d"/>
+      <g fill="#f1efe9" font-family="Georgia, 'Times New Roman', serif">
+        <text x="200" y="195" text-anchor="middle" font-size="34" font-weight="400" font-style="italic">${label}</text>
+        <text x="200" y="235" text-anchor="middle" font-size="11" letter-spacing="6" font-family="Helvetica, Arial, sans-serif">${year}</text>
       </g>
     </svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
