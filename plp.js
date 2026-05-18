@@ -275,6 +275,53 @@ function realignCloneToBag() {
 }
 window.addEventListener('resize', realignCloneToBag);
 
+// When the prototype switches between browse↔pdp, the CSS rule
+//   `.bag { width: 78% }`  →  `.app[data-mode="pdp"] .bag { width: 92% }`
+// animates the bag's underlying size over 500ms. The morph-clone (which
+// is the visible bag image) needs to grow/shrink in lockstep.
+function getBagTargetRect(mode) {
+  const inner = document.querySelector('.stage__inner');
+  if (!inner) return null;
+  const r = inner.getBoundingClientRect();
+  const pct = mode === 'pdp' ? 0.92 : 0.78;
+  const size = Math.min(r.width * pct, r.height);
+  const left = r.left + (r.width - size) / 2;
+  const top  = r.top  + (r.height - size) / 2;
+  return { left, top, width: size, height: size };
+}
+
+function syncCloneToMode(mode) {
+  if (!morphClone || !morphClone.classList.contains('is-active')) return;
+  const target = getBagTargetRect(mode);
+  if (!target) return;
+  const ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';     // same as --easing
+  morphClone.style.transition = [
+    `left 500ms ${ease} 50ms`,
+    `top 500ms ${ease} 50ms`,
+    `width 500ms ${ease} 50ms`,
+    `height 500ms ${ease} 50ms`,
+  ].join(', ');
+  morphClone.style.left   = `${target.left}px`;
+  morphClone.style.top    = `${target.top}px`;
+  morphClone.style.width  = `${target.width}px`;
+  morphClone.style.height = `${target.height}px`;
+}
+
+// Watch the prototype's data-mode and sync the clone whenever it
+// flips browse↔pdp. (Initial PLP→browse morph doesn't change this
+// attribute; it stays "browse" throughout, so this observer is silent
+// during the entry morph.)
+const appEl = document.querySelector('.app');
+if (appEl) {
+  new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.attributeName === 'data-mode') {
+        syncCloneToMode(appEl.dataset.mode);
+      }
+    }
+  }).observe(appEl, { attributes: true });
+}
+
 // Tile click handler — only the non-heart area triggers morph
 if (grid) {
   grid.addEventListener('click', (e) => {

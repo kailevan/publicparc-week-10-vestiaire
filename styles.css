@@ -357,7 +357,10 @@ body { user-select: none; -webkit-user-select: none; }
 .buybar__btn:active { opacity: 0.7; }
 
 /* PDP mode toggles ---------------------------------------------- */
-.app[data-mode="pdp"] .hdr {
+/* In PDP, only the context line ("chanel bag · 247 results") fades
+   out — the Vestiaire logo stays visible as the anchor through the
+   entire experience. */
+.app[data-mode="pdp"] .hdr__context {
   opacity: 0;
   pointer-events: none;
 }
