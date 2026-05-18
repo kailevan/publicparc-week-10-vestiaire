@@ -203,10 +203,11 @@ function morphPrototypeToPlp() {
     return;
   }
   const source = sourceTile;
-  const isChip = source.classList.contains('chip');
-  const sourceEl = isChip
-    ? source.querySelector('.chip__thumb')
-    : source.querySelector('.card__img');
+  const isChip   = source.classList.contains('chip');
+  const isFilter = source.classList.contains('hot-filter');
+  const sourceEl = isChip   ? source.querySelector('.chip__thumb')
+                : isFilter  ? source                  // the button itself
+                            : source.querySelector('.card__img');
   if (!sourceEl) {
     document.body.dataset.state = 'plp';
     unlockBodyScroll();
@@ -220,8 +221,15 @@ function morphPrototypeToPlp() {
   void source.offsetWidth;
   const endRect = sourceEl.getBoundingClientRect();
 
-  // Reverse animation — shrink to source rect, also re-morph shape
-  // back to a circle if we came from a chip.
+  // Reverse animation — shrink to source rect; re-morph shape back to
+  // whatever the source's natural shape was (circle / pill / square).
+  const endRadius = isChip   ? '50%'
+                  : isFilter ? `${endRect.height / 2}px`
+                  : '0';
+  const endBg     = isChip   ? '#111'
+                  : isFilter ? '#ffffff'
+                  : '#f1efe9';
+
   morphClone.style.transition = [
     `left ${T_EXPAND}ms ${EASE_EXPAND}`,
     `top ${T_EXPAND}ms ${EASE_EXPAND}`,
@@ -230,8 +238,8 @@ function morphPrototypeToPlp() {
     `border-radius ${T_EXPAND}ms ${EASE_EXPAND}`,
     `background ${T_FADE_PLP}ms ease`,
   ].join(', ');
-  morphClone.style.background = isChip ? '#111' : '#f1efe9';
-  morphClone.style.borderRadius = isChip ? '50%' : '0';
+  morphClone.style.background = endBg;
+  morphClone.style.borderRadius = endRadius;
   morphClone.style.left   = `${endRect.left}px`;
   morphClone.style.top    = `${endRect.top}px`;
   morphClone.style.width  = `${endRect.width}px`;
@@ -240,6 +248,7 @@ function morphPrototypeToPlp() {
   setTimeout(() => {
     source.classList.remove('card--is-source');
     source.classList.remove('chip--is-source');
+    source.classList.remove('hot-filter--is-source');
     morphClone.style.transition = 'opacity 200ms ease';
     morphClone.style.opacity = '0';
   }, T_EXPAND);
@@ -317,58 +326,60 @@ if (appEl) {
   }).observe(appEl, { attributes: true });
 }
 
-// v2: tiles in the grid DO NOT trigger the morph. Only the "by year"
-// filter chip does. (Hearts still toggle as in v1.)
+// v2: tiles in the grid DO NOT trigger the morph. Only the "Year"
+// hot-filter pill does. (Hearts still toggle as in v1.)
 
-// ---------- Morph: chip → prototype bag --------------------------
-// Same 3-phase choreography as morphTileToPrototype, but:
-//   - the source rect is the chip thumb (small, circular)
-//   - we additionally animate `border-radius` from 50% → 0% over the
-//     expansion duration so the circle smoothly becomes the square bag
-//   - the start background colour matches the chip's black pill
-function morphChipToPrototype(chip) {
+// ---------- Morph: hot-filter "Year" pill → prototype bag --------
+// Same 3-phase choreography as morphTileToPrototype, but the source
+// is the wide-flat filter pill at the top of the page. The pill itself
+// fades (text + border) during phase 1; the clone (positioned over the
+// pill rect with the bag image inside, object-fit: contain) takes over
+// and expands down to the bag rect. Border-radius animates pill-curve
+// → square. Larger travel distance than the v1 morph → reads as the
+// bag literally emerging from the filter row.
+function morphFilterToPrototype(filterBtn) {
   if (!morphClone || !window.protoApi) return;
-  const thumb = chip.querySelector('.chip__thumb');
-  if (!thumb) return;
-  const thumbId = thumb.dataset.thumb;
-  const imgSrc = `assets/plp/${thumbId}.jpg`;
-  const year = parseInt(chip.dataset.year, 10) || 1996;
+  const year = parseInt(filterBtn.dataset.year, 10) || 1996;
 
-  sourceTile = chip;
+  // Pull the bag image for that year so we know what to grow into.
+  // (script.js's BAGS isn't exposed; we can derive the same way it does
+  // via nearestBag — but here it's simpler to map year → PLP image
+  // directly since v2 has its own PRODUCTS list above.)
+  const targetProduct = PRODUCTS.find(p => p.year === year) || PRODUCTS[1];
+  const imgSrc = targetProduct.img;
 
-  // Start rect = the thumb's screen position (circle, 38×38)
-  const startRect = thumb.getBoundingClientRect();
+  sourceTile = filterBtn;
 
-  chip.classList.add('chip--is-source');
+  // Start rect = the pill button's full screen rect
+  const startRect = filterBtn.getBoundingClientRect();
+
+  filterBtn.classList.add('hot-filter--is-source');
 
   document.body.dataset.state = 'morphing';
   lockBodyScroll();
 
-  // Pre-warm the prototype with target year + image
+  // Pre-warm prototype
   window.protoApi.setYear(year);
   const bagLayer = window.protoApi.getBagEl();
   const targetRect = bagLayer.getBoundingClientRect();
 
-  // Position clone at the thumb rect, as a black circle (matches chip)
+  // Position clone at the pill rect, white bg + pill curvature
   morphCloneImg.src = imgSrc;
   morphClone.style.transition = 'none';
   morphClone.style.left   = `${startRect.left}px`;
   morphClone.style.top    = `${startRect.top}px`;
   morphClone.style.width  = `${startRect.width}px`;
   morphClone.style.height = `${startRect.height}px`;
-  morphClone.style.borderRadius = '50%';
-  morphClone.style.background = '#111';
+  morphClone.style.borderRadius = `${startRect.height / 2}px`;   // pill shape
+  morphClone.style.background = '#ffffff';
   morphClone.style.opacity = '1';
   morphClone.classList.add('is-active');
   void morphClone.offsetWidth;
 
-  // PHASE 1: background fades black → white in lockstep with PLP
-  requestAnimationFrame(() => {
-    morphClone.style.transition = `background ${T_FADE_PLP}ms ease`;
-    morphClone.style.background = '#ffffff';
-  });
+  // PHASE 1: nothing extra to animate on the clone yet (white→white);
+  // the PLP elements (and pill chrome) fade via CSS during 0–T_FADE_PLP.
 
-  // PHASE 2: expansion + circle→square morph
+  // PHASE 2: expand pill rect → bag rect, pill curvature → square
   setTimeout(() => {
     morphClone.style.transition = [
       `left ${T_EXPAND}ms ${EASE_EXPAND}`,
@@ -384,17 +395,17 @@ function morphChipToPrototype(chip) {
     morphClone.style.borderRadius = '0';
   }, T_FADE_PLP);
 
-  // PHASE 3: settle into browse state
+  // PHASE 3: state → browse
   setTimeout(() => {
     document.body.dataset.state = 'browse';
     morphClone.style.transition = 'none';
   }, T_FADE_PLP + T_EXPAND + T_BUFFER);
 }
 
-// Wire the "by year" chip click
-const chipByYear = document.getElementById('chipByYear');
-if (chipByYear) {
-  chipByYear.addEventListener('click', () => morphChipToPrototype(chipByYear));
+// Wire the "Year" hot-filter click
+const filterByYear = document.getElementById('filterByYear');
+if (filterByYear) {
+  filterByYear.addEventListener('click', () => morphFilterToPrototype(filterByYear));
 }
 
 // ---------- Back-to-PLP from prototype browse mode ---------------

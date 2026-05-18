@@ -905,3 +905,36 @@ body[data-state="morphing"] .chip--is-source {
 body[data-state="plp"] .plp-view .plp__grid .card {
   cursor: default;
 }
+
+/* ---------- v2 hot-filter "Year" pill --------------------------- */
+/* Black-filled pill in the hot-filter row — visually distinct from
+   the neutral white-outlined Sort By / Duty Free / Category pills,
+   so the user reads "this one isn't a normal text filter, it does
+   something." */
+.hot-filter--year {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+.hot-filter--year svg {
+  opacity: 1;
+}
+
+/* During the filter→bag morph the pill loses its chrome — text,
+   border, and dropdown chevron all fade — so by the time the clone
+   starts expanding, the pill at the source position has visually
+   become an empty white rect (which the clone is overlaying). */
+.hot-filter--is-source {
+  transition: background-color 300ms var(--easing),
+              border-color 300ms var(--easing),
+              color 300ms var(--easing);
+}
+body[data-state="morphing"] .hot-filter--is-source {
+  background-color: #ffffff;
+  border-color: #ffffff;
+  color: transparent;
+}
+body[data-state="morphing"] .hot-filter--is-source svg {
+  opacity: 0;
+  transition: opacity 200ms var(--easing);
+}
