@@ -375,3 +375,288 @@ body { user-select: none; -webkit-user-select: none; }
   font-size: 10px;
   color: rgba(0,0,0,0.3);
 }
+
+/* ===============================================================
+   PLP — Vestiaire Collective "chanel bag" search results
+   1:1 from Figma (node 7044:32, 390×11459 mobile mockup)
+   =============================================================== */
+
+body.plp-body {
+  overflow: auto;                /* the prototype page locks scroll; PLP doesn't */
+  touch-action: pan-y;
+  background: #fff;
+}
+
+.plp {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: 80px;          /* room for bottom nav */
+  background: #fff;
+  min-height: 100vh;
+}
+
+/* Title block ---------------------------------------------------- */
+.plp__title {
+  padding: 24px 20px 8px;
+}
+.plp__h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.01em;
+  color: #111;
+  margin: 0;
+}
+.plp__count {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 21px;
+  color: #777;
+  margin: 4px 0 0;
+}
+
+/* Chips (guided search) ----------------------------------------- */
+.plp__chips,
+.plp__hotfilters {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  margin: 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.plp__chips::-webkit-scrollbar,
+.plp__hotfilters::-webkit-scrollbar { display: none; }
+.plp__chips,
+.plp__hotfilters { scrollbar-width: none; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px 4px 4px;
+  height: 46px;
+  border: 1px solid #e5e5e5;
+  border-radius: 23px;
+  background: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+.chip__thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1efe9 center / cover no-repeat;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.chip__label {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 21px;
+  color: #111;
+}
+
+/* Hot filters --------------------------------------------------- */
+.plp__hotfilters {
+  padding-top: 4px;
+  padding-bottom: 12px;
+}
+.hot-filter {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 21px;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+  border-radius: 22px;
+  padding: 11px 16px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #111;
+  cursor: pointer;
+  font-weight: 400;
+}
+.hot-filter svg { opacity: 0.6; }
+
+/* Save this search --------------------------------------------- */
+.plp__savesearch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  margin: 8px 0 16px;
+  border: none;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 24px;
+  color: #555;
+  cursor: pointer;
+}
+.plp__savesearch span { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Product grid -------------------------------------------------- */
+.plp__grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 4px 12px 16px;
+  margin: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  cursor: pointer;
+  background: #fff;
+}
+
+.card__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #f1efe9;       /* Vestiaire pale cream-grey image bg */
+  overflow: hidden;
+}
+.card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card__heart {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition: background 150ms ease;
+}
+.card__heart:active { background: rgba(0,0,0,0.05); }
+.card__heart.is-active { color: #e0345a; }
+
+.card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 4px 0;
+}
+.card__name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.card__brand {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 21px;
+  color: #000;
+  letter-spacing: 0.01em;
+}
+.card__name {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 21px;
+  color: #333;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card__price {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 21px;
+  color: #333;
+  margin-top: 8px;
+}
+.card__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 21px;
+  color: #1f7a4f;            /* Vestiaire's green for the leaf+ship-from indicator */
+  margin-top: 4px;
+}
+.card__location > span { color: #333; }
+
+/* USP / trust block --------------------------------------------- */
+.plp__usp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 16px;
+  padding: 36px 20px 28px;
+}
+.usp__icon {
+  width: 28px;
+  height: 28px;
+  color: #111;
+  display: block;
+  margin-bottom: 10px;
+}
+.usp__title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 21px;
+  margin: 0 0 4px;
+  color: #111;
+}
+.usp__body {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 19px;
+  color: #555;
+  margin: 0;
+}
+
+/* Bottom navigation --------------------------------------------- */
+.plp__bottomnav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0));
+  background: #fff;
+  border-top: 1px solid #ebebeb;
+  z-index: 50;
+  max-width: 430px;
+  margin: 0 auto;
+}
+.navitem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--sans);
+  font-size: 10px;
+  color: #111;
+  text-decoration: none;
+  padding: 4px 8px;
+}
+.navitem svg { display: block; }
