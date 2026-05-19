@@ -34,68 +34,77 @@ const DEFAULT_SLIDE_LABELS = ['Product', 'Campaign', 'Runway', 'Press', 'Detail'
 
 // Editorial slides per significant bag, sourced from Maison de Chanel CA.
 // Slide 0 (Product) is always the bag itself — null here, handled by
-// showEditorial. Slides 1+ are real archival / editorial / press imagery.
+// showEditorial. Slides 1+ are real archival / editorial / press imagery
+// with captions verified by actually opening each image.
 const EDITORIAL_CURATED = {
   1955: [
     null,
-    { src: 'assets/editorial/1955_255_b.webp', label: 'Coco' },
-    { src: 'assets/editorial/1955_255_a.jpg',  label: 'Press' },
-    { src: 'assets/editorial/1955_255_c.jpg',  label: 'Editorial' },
+    { src: 'assets/editorial/1955_255_b.webp', label: 'Coco Chanel' },
+    { src: 'assets/editorial/1955_255_a.jpg',  label: 'Press, 1961' },
+    { src: 'assets/editorial/1955_255_c.jpg',  label: 'Tuileries, Paris' },
   ],
   1983: [
     null,
     { src: 'assets/editorial/1983_classicflap_a.jpg', label: 'Campaign' },
-    { src: 'assets/editorial/1983_classicflap_b.jpg', label: 'Press' },
-    { src: 'assets/editorial/1983_classicflap_c.jpg', label: 'Detail' },
+    { src: 'assets/editorial/1983_classicflap_c.jpg', label: 'Editorial' },
+    { src: 'assets/editorial/1983_classicflap_b.jpg', label: 'Product detail' },
   ],
   1997: [
     null,
-    { src: 'assets/editorial/1997_woc_a.jpeg', label: 'Campaign' },
+    { src: 'assets/editorial/1997_woc_a.jpeg', label: 'Archive' },
     { src: 'assets/editorial/1997_woc_c.jpg',  label: 'Editorial' },
   ],
   2005: [
     null,
-    { src: 'assets/editorial/2005_reissue_a.jpg', label: 'Detail' },
-    { src: 'assets/editorial/2005_reissue_b.jpg', label: 'Press' },
+    { src: 'assets/editorial/2005_reissue_b.jpg', label: 'Campaign' },
+    { src: 'assets/editorial/2005_reissue_a.jpg', label: 'Runway detail' },
   ],
   2011: [
     null,
-    { src: 'assets/editorial/2011_boy_a.jpg',  label: 'Campaign' },
-    { src: 'assets/editorial/2011_boy_b.webp', label: 'Runway' },
-    { src: 'assets/editorial/2011_boy_c.jpg',  label: 'Press' },
-    { src: 'assets/editorial/2011_boy_d.jpg',  label: 'Detail' },
+    { src: 'assets/editorial/2011_boy_b.webp', label: 'Runway A/W 2011' },
+    { src: 'assets/editorial/2011_boy_a.jpg',  label: 'Archive' },
+    { src: 'assets/editorial/2011_boy_c.jpg',  label: 'Product detail' },
+    { src: 'assets/editorial/2011_boy_d.jpg',  label: 'Spring 2015 archive' },
   ],
   2019: [
     null,
     { src: 'assets/editorial/2019_19_a.jpg', label: 'Campaign' },
-    { src: 'assets/editorial/2019_19_b.jpg', label: 'Runway' },
-    { src: 'assets/editorial/2019_19_c.jpg', label: 'Detail' },
+    { src: 'assets/editorial/2019_19_b.jpg', label: 'Editorial, Paris' },
+    { src: 'assets/editorial/2019_19_c.jpg', label: 'Neon edition' },
   ],
   2022: [
     null,
-    { src: 'assets/editorial/2022_22_a.jpg', label: 'Campaign' },
-    { src: 'assets/editorial/2022_22_b.jpg', label: 'Runway' },
-    { src: 'assets/editorial/2022_22_c.jpg', label: 'Detail' },
+    { src: 'assets/editorial/2022_22_a.jpg', label: 'London campaign' },
+    { src: 'assets/editorial/2022_22_b.jpg', label: 'Studio campaign' },
+    { src: 'assets/editorial/2022_22_c.jpg', label: 'Night campaign' },
   ],
   2025: [
     null,
-    { src: 'assets/editorial/2025_25_dua.webp', label: 'Dua Lipa' },
-    { src: 'assets/editorial/2025_25_a.jpg',    label: 'Campaign' },
-    { src: 'assets/editorial/2025_25_b.jpg',    label: 'Press' },
-    { src: 'assets/editorial/2025_25_c.jpg',    label: 'Detail' },
+    { src: 'assets/editorial/2025_25_dua.webp', label: 'Dua Lipa campaign' },
+    { src: 'assets/editorial/2025_25_a.jpg',    label: 'Editorial' },
+    // 2025_25_b dropped — relabel pass flagged it likely isn't the 25 bag
+    { src: 'assets/editorial/2025_25_c.jpg',    label: 'Studio portrait' },
   ],
 };
 
-// Editorial slides per bag year. Slide 0 (Product) is always the bag
-// itself — handled in showEditorial. Slides 1-4 fall back to dark
-// typographic editorial cards (label + year, italic serif) so the
-// editorial layer is visually distinct from bag product photography.
+// Builds the slide list for a given bag year.
+//   Slide 0           — Product (bag photo)
+//   Slides 1..N       — Real editorial images (skipped if not curated)
+//   Last slide        — Story (text card) if BAG_STORIES has this year
+//
+// Non-significant bags (no editorial, no story) → 1 slide (Product only).
+// Significant bags with no editorial but with story → 2 slides.
+// Significant bags with editorial + story → 2 + N slides.
 function getSlidesFor(year) {
   const curated = EDITORIAL_CURATED[year] || [];
-  return DEFAULT_SLIDE_LABELS.map((label, i) => {
-    if (curated[i]) return curated[i];
-    return { src: editorialPlaceholderURI(label, year), label };
-  });
+  const story = (typeof BAG_STORIES !== 'undefined') ? BAG_STORIES[year] : null;
+  const slides = [{ type: 'product', label: 'Product' }];
+  for (let i = 1; i < curated.length; i++) {
+    const c = curated[i];
+    if (c && c.src) slides.push({ type: 'image', src: c.src, label: c.label });
+  }
+  if (story) slides.push({ type: 'story', label: 'Story' });
+  return slides;
 }
 
 const YEAR_MIN = 1955;
@@ -252,18 +261,55 @@ function showEditorial(year, idx) {
   const slides = getSlidesFor(year);
   const s = slides[idx];
   if (!s) return;
-  if (idx === 0) {
+
+  if (s.type === 'product') {
+    hideStoryCard();
     const bag = BAGS.find(b => b.year === year) || lockedBag;
     const probe = new Image();
     probe.onload  = () => showImageURL(bag.img);
     probe.onerror = () => showImageURL(placeholderURI(bag));
     probe.src = bag.img;
-    return;
+  } else if (s.type === 'story') {
+    showStoryCard(year);
+  } else {
+    hideStoryCard();
+    const probe = new Image();
+    probe.onload  = () => showImageURL(s.src);
+    probe.onerror = () => showImageURL(editorialPlaceholderURI(s.label, year));
+    probe.src = s.src;
   }
-  const probe = new Image();
-  probe.onload  = () => showImageURL(s.src);
-  probe.onerror = () => showImageURL(editorialPlaceholderURI(s.label, year));
-  probe.src = s.src;
+}
+
+function showStoryCard(year) {
+  const card = document.getElementById('storyCard');
+  if (!card) return;
+  const text = (typeof BAG_STORIES !== 'undefined') ? BAG_STORIES[year] : null;
+  if (!text) return;
+  card.textContent = text;
+  card.scrollTop = 0;
+  card.setAttribute('aria-hidden', 'false');
+  document.body.dataset.slideType = 'story';
+  // Hide the morph-clone (the bag image) — it's z-index 9999, so CSS
+  // can't easily stack over it. Toggling its opacity inline is the
+  // simplest way to let the story text stand alone.
+  const clone = document.getElementById('morphClone');
+  if (clone) {
+    clone.style.transition = 'opacity 260ms var(--easing)';
+    clone.style.opacity = '0';
+  }
+}
+
+function hideStoryCard() {
+  const card = document.getElementById('storyCard');
+  if (card) card.setAttribute('aria-hidden', 'true');
+  if (document.body.dataset.slideType === 'story') {
+    document.body.dataset.slideType = '';
+  }
+  const clone = document.getElementById('morphClone');
+  if (clone && clone.classList.contains('is-active')) {
+    clone.style.transition = 'opacity 260ms var(--easing)';
+    clone.style.opacity = '1';
+  }
 }
 
 // ---------- Strip building -----------------------------------------
@@ -479,6 +525,8 @@ function exitPDP() {
   lockedBag = null;
   mode = 'browse';
   app.dataset.mode = 'browse';
+
+  hideStoryCard();
 
   // The browse rail is still positioned where the user left it before tapping
   // the bag (browseTx didn't change). But yearF might be different from
