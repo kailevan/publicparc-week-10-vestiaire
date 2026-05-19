@@ -393,6 +393,13 @@ body[data-slide-type="story"] #morphClone {
   text-transform: none;
   color: var(--fg-soft);
   top: 14px;
+  /* Allow wrap to 2 lines for long captions like "Inez & Vinoodh campaign"
+     or "Margot, Michel Gondry". max-width matches PX_PER_SLIDE (80) minus
+     a few px of breathing so adjacent labels never touch. */
+  white-space: normal;
+  max-width: 76px;
+  text-align: center;
+  line-height: 1.2;
 }
 
 /* Back arrow (PDP only) ----------------------------------------- */

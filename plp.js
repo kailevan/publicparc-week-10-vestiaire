@@ -6,29 +6,24 @@
      prototype, with the selected bag's year as the landing year.
 --------------------------------------------------------------- */
 
-/* PLP grid — 15 significant Chanel bags + 3 notable, all real Vestiaire
-   photos. Tile #2 stays the 2008 Modern Chain (the v1 + v2 morph hero).
-   Tap any tile → morphs into year-dial mode at that bag's year. */
-const PRODUCTS = [
-  { id: '01', img: 'assets/bags/1997_woc.jpg',             name: 'Wallet on Chain leather crossbody bag', price: '€920',   location: 'United States', year: 1997, tag: 'vintage' },
-  { id: '02', img: 'assets/bags/2008.webp',                name: 'Modern Chain leather handbag',          price: '€3,100', location: 'United States', year: 2008 },
-  { id: '03', img: 'assets/bags/1983_classic-flap.jpg',    name: 'Timeless Classique leather handbag',    price: '€4,500', location: 'United States', year: 1983, tag: 'vintage' },
-  { id: '04', img: 'assets/bags/2017_gabrielle.jpg',       name: 'Gabrielle leather handbag',             price: '€3,200', location: 'United States', year: 2017 },
-  { id: '05', img: 'assets/bags/1955_255.jpg',             name: '2.55 leather handbag',                  price: '€5,800', location: 'United States', year: 1955, tag: 'vintage' },
-  { id: '06', img: 'assets/bags/2011_boy.jpg',             name: 'Boy denim patchwork handbag',           price: '€2,950', location: 'United States', year: 2011 },
-  { id: '07', img: 'assets/bags/2022_22.jpg',              name: 'Chanel 22 leather tote',                price: '€4,800', location: 'United States', year: 2022 },
-  { id: '08', img: 'assets/bags/2014_graffiti.jpg',        name: 'Graffiti canvas backpack',              price: '€4,200', location: 'United States', year: 2014 },
-  { id: '09', img: 'assets/bags/1994_supermodel.jpg',      name: 'Vintage CC Chain leather tote',         price: '€2,750', location: 'United States', year: 1994, tag: 'vintage' },
-  { id: '10', img: 'assets/bags/2019_19.jpg',              name: 'Chanel 19 goatskin handbag',            price: '€4,400', location: 'United States', year: 2019 },
-  { id: '11', img: 'assets/bags/1992_vanity-case.jpg',     name: 'Vanity Case lambskin handbag',          price: '€2,400', location: 'United States', year: 1992, tag: 'vintage' },
-  { id: '12', img: 'assets/bags/2025_25.jpg',              name: 'Chanel 25 denim handbag',               price: '€5,200', location: 'United States', year: 2025 },
-  { id: '13', img: 'assets/bags/2005_reissue-255.jpg',     name: 'Reissue 2.55 calfskin handbag',         price: '€5,400', location: 'United States', year: 2005 },
-  { id: '14', img: 'assets/bags/2023_kelly.jpg',           name: 'Kelly top handle leather handbag',      price: '€5,800', location: 'United States', year: 2023 },
-  { id: '15', img: 'assets/bags/2018_31.jpg',              name: '31 leather handbag',                    price: '€4,900', location: 'United States', year: 2018 },
-  { id: '16', img: 'assets/bags/1995_diana.jpg',           name: 'Diana vintage leather handbag',         price: '€1,950', location: 'United States', year: 1995, tag: 'vintage' },
-  { id: '17', img: 'assets/bags/2004_cambon.jpg',          name: 'Cambon lambskin tote',                  price: '€1,800', location: 'United States', year: 2004 },
-  { id: '18', img: 'assets/bags/2015_girl.jpg',            name: 'Girl lambskin handbag',                 price: '€2,100', location: 'United States', year: 2015 },
-];
+/* PLP grid — every bag in the year slider (63 entries, chronological
+   from 1955 to 2025) becomes a PLP tile. Round-trip: tap any tile →
+   year mode at that year; exit from any year → PLP scrolls back to
+   that tile and the bag shrinks into it. Derived from window.BAGS
+   (defined in script.js) so this stays in sync as the canonical bag
+   list evolves. */
+const PRODUCTS = (window.BAGS || []).map((bag, i) => {
+  const id = String(i + 1).padStart(2, '0');
+  return {
+    id,
+    img: bag.img,
+    name: bag.name.replace(' · ', ' '),
+    price: bag.price,
+    location: 'United States',
+    year: bag.year,
+    tag: bag.year < 2000 ? 'vintage' : undefined,
+  };
+});
 
 const LEAF_SVG       = `<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1f7a4f" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13 C3 7 7 3 13 3 C13 9 9 13 3 13 Z M5 11 L11 5"/></svg>`;
 const HEART_SVG      = `<svg viewBox="0 0 24 24" width="20" height="18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 C8 18 3 14 3 9 A4 4 0 0 1 12 7 A4 4 0 0 1 21 9 C21 14 16 18 12 21 Z"/></svg>`;
@@ -213,7 +208,29 @@ function morphPrototypeToPlp() {
     unlockBodyScroll();
     return;
   }
-  const tile = sourceTile;
+
+  // Round-trip: find the tile in the PLP grid matching the year the
+  // user actually scrubbed to (may differ from where they entered).
+  // PLP is then scrolled so that tile sits in the viewport, and the
+  // bag clone shrinks INTO that tile — so the exit lands on the same
+  // bag the user was looking at.
+  const yearDigitsEl = document.querySelector('.year__digits');
+  const yearTextEl   = document.querySelector('.year');
+  const currentYear  = parseInt(
+    (yearDigitsEl && yearDigitsEl.textContent) ||
+    (yearTextEl && yearTextEl.textContent) || '',
+    10
+  );
+  let tile = (currentYear && document.querySelector(`.plp__grid .card[data-year="${currentYear}"]`)) || sourceTile;
+
+  // If the year-matched tile differs from where we entered, swap the
+  // .card--is-source marker so the right tile is hidden during shrink.
+  if (tile !== sourceTile) {
+    if (sourceTile) sourceTile.classList.remove('card--is-source');
+    tile.classList.add('card--is-source');
+    sourceTile = tile;
+  }
+
   const tileImg = tile.querySelector('.card__img');
   if (!tileImg || !morphClone) {
     document.body.dataset.state = 'plp';
@@ -240,8 +257,19 @@ function morphPrototypeToPlp() {
     el.style.opacity = '0';
   });
 
-  // PLP is in layout (CSS visibility:hidden), so measure now.
-  void tile.offsetWidth;
+  // Scroll the (still-hidden) PLP so the target tile is centered in
+  // the viewport — happens invisibly because .app (position:fixed)
+  // covers the whole viewport until we flip state to 'plp'.
+  document.body.style.overflow = 'auto';
+  document.documentElement.style.overflow = 'auto';
+  void document.body.offsetHeight;
+  const tileRect0 = tileImg.getBoundingClientRect();
+  const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
+                        tileRect0.top - (window.innerHeight - tileRect0.height) / 2;
+  window.scrollTo(0, Math.max(0, desiredScroll));
+  void document.body.offsetHeight;
+
+  // Re-measure after scroll
   const endRect = tileImg.getBoundingClientRect();
 
   // Phase 2: shrink the clone to the tile rect after the UI fade.

@@ -6,30 +6,22 @@
      prototype, with the selected bag's year as the landing year.
 --------------------------------------------------------------- */
 
-/* PLP grid — 15 significant Chanel bags + 3 notable, all real Vestiaire
-   photos. Tile #2 stays the 2008 Modern Chain (v2 morph source). In v2,
-   tiles do NOT trigger the morph (only the Year pill does) but their
-   images still represent real Chanel models. */
-const PRODUCTS = [
-  { id: '01', img: 'assets/bags/1997_woc.jpg',             name: 'Wallet on Chain leather crossbody bag', price: '€920',   location: 'United States', year: 1997, tag: 'vintage' },
-  { id: '02', img: 'assets/bags/2008.webp',                name: 'Modern Chain leather handbag',          price: '€3,100', location: 'United States', year: 2008 },
-  { id: '03', img: 'assets/bags/1983_classic-flap.jpg',    name: 'Timeless Classique leather handbag',    price: '€4,500', location: 'United States', year: 1983, tag: 'vintage' },
-  { id: '04', img: 'assets/bags/2017_gabrielle.jpg',       name: 'Gabrielle leather handbag',             price: '€3,200', location: 'United States', year: 2017 },
-  { id: '05', img: 'assets/bags/1955_255.jpg',             name: '2.55 leather handbag',                  price: '€5,800', location: 'United States', year: 1955, tag: 'vintage' },
-  { id: '06', img: 'assets/bags/2011_boy.jpg',             name: 'Boy denim patchwork handbag',           price: '€2,950', location: 'United States', year: 2011 },
-  { id: '07', img: 'assets/bags/2022_22.jpg',              name: 'Chanel 22 leather tote',                price: '€4,800', location: 'United States', year: 2022 },
-  { id: '08', img: 'assets/bags/2014_graffiti.jpg',        name: 'Graffiti canvas backpack',              price: '€4,200', location: 'United States', year: 2014 },
-  { id: '09', img: 'assets/bags/1994_supermodel.jpg',      name: 'Vintage CC Chain leather tote',         price: '€2,750', location: 'United States', year: 1994, tag: 'vintage' },
-  { id: '10', img: 'assets/bags/2019_19.jpg',              name: 'Chanel 19 goatskin handbag',            price: '€4,400', location: 'United States', year: 2019 },
-  { id: '11', img: 'assets/bags/1992_vanity-case.jpg',     name: 'Vanity Case lambskin handbag',          price: '€2,400', location: 'United States', year: 1992, tag: 'vintage' },
-  { id: '12', img: 'assets/bags/2025_25.jpg',              name: 'Chanel 25 denim handbag',               price: '€5,200', location: 'United States', year: 2025 },
-  { id: '13', img: 'assets/bags/2005_reissue-255.jpg',     name: 'Reissue 2.55 calfskin handbag',         price: '€5,400', location: 'United States', year: 2005 },
-  { id: '14', img: 'assets/bags/2023_kelly.jpg',           name: 'Kelly top handle leather handbag',      price: '€5,800', location: 'United States', year: 2023 },
-  { id: '15', img: 'assets/bags/2018_31.jpg',              name: '31 leather handbag',                    price: '€4,900', location: 'United States', year: 2018 },
-  { id: '16', img: 'assets/bags/1995_diana.jpg',           name: 'Diana vintage leather handbag',         price: '€1,950', location: 'United States', year: 1995, tag: 'vintage' },
-  { id: '17', img: 'assets/bags/2004_cambon.jpg',          name: 'Cambon lambskin tote',                  price: '€1,800', location: 'United States', year: 2004 },
-  { id: '18', img: 'assets/bags/2015_girl.jpg',            name: 'Girl lambskin handbag',                 price: '€2,100', location: 'United States', year: 2015 },
-];
+/* PLP grid — every bag in the year slider (63 entries, chronological
+   from 1955 to 2025) becomes a PLP tile. v2's year-pill always enters
+   at the 2008 Modern Chain (found by data-year), but on exit the PLP
+   scrolls to whichever year the user actually scrubbed to. */
+const PRODUCTS = (window.BAGS || []).map((bag, i) => {
+  const id = String(i + 1).padStart(2, '0');
+  return {
+    id,
+    img: bag.img,
+    name: bag.name.replace(' · ', ' '),
+    price: bag.price,
+    location: 'United States',
+    year: bag.year,
+    tag: bag.year < 2000 ? 'vintage' : undefined,
+  };
+});
 
 const LEAF_SVG       = `<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1f7a4f" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13 C3 7 7 3 13 3 C13 9 9 13 3 13 Z M5 11 L11 5"/></svg>`;
 const HEART_SVG      = `<svg viewBox="0 0 24 24" width="20" height="18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 C8 18 3 14 3 9 A4 4 0 0 1 12 7 A4 4 0 0 1 21 9 C21 14 16 18 12 21 Z"/></svg>`;
@@ -216,7 +208,30 @@ function morphPrototypeToPlp() {
     sourceTile = null;
     return;
   }
-  const source = sourceTile;
+
+  // Round-trip: in v2 the entry is always tile 2008 (Modern Chain), but
+  // on exit we redirect to the tile matching the year the user actually
+  // scrubbed to. PLP is scrolled so that tile sits centered in the
+  // viewport, and the bag shrinks INTO that tile.
+  const yearDigitsEl = document.querySelector('.year__digits');
+  const yearTextEl   = document.querySelector('.year');
+  const currentYear  = parseInt(
+    (yearDigitsEl && yearDigitsEl.textContent) ||
+    (yearTextEl && yearTextEl.textContent) || '',
+    10
+  );
+  // Only redirect if source is a card (not a chip / hot-filter — those
+  // morph back to their original element).
+  const wasCard = sourceTile.classList.contains('card');
+  const yearTile = currentYear && document.querySelector(`.plp__grid .card[data-year="${currentYear}"]`);
+  let source = sourceTile;
+  if (wasCard && yearTile && yearTile !== sourceTile) {
+    sourceTile.classList.remove('card--is-source');
+    yearTile.classList.add('card--is-source');
+    sourceTile = yearTile;
+    source = yearTile;
+  }
+
   const isChip   = source.classList.contains('chip');
   const isFilter = source.classList.contains('hot-filter');
   const sourceEl = isChip   ? source.querySelector('.chip__thumb')
@@ -247,9 +262,21 @@ function morphPrototypeToPlp() {
     el.style.opacity = '0';
   });
 
-  // PLP is kept in layout (CSS visibility:hidden), so we can measure
-  // the source tile's rect right now.
-  void source.offsetWidth;
+  // Scroll the (still-hidden) PLP so the target tile is centered in
+  // the viewport. .app (position:fixed) covers the whole screen during
+  // browse mode so the scroll happens invisibly.
+  if (wasCard) {
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+    void document.body.offsetHeight;
+    const tileRect0 = sourceEl.getBoundingClientRect();
+    const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
+                          tileRect0.top - (window.innerHeight - tileRect0.height) / 2;
+    window.scrollTo(0, Math.max(0, desiredScroll));
+    void document.body.offsetHeight;
+  }
+
+  // Measure target rect (post-scroll if applicable)
   const endRect = sourceEl.getBoundingClientRect();
 
   const endRadius = isChip   ? '50%'
@@ -389,12 +416,21 @@ if (appEl) {
 function morphFilterToPrototype(filterBtn) {
   if (!morphClone || !window.protoApi) return;
 
-  // v2 entry: pill is the click target, but the visual morph source is the
-  // hero tile in the grid (right column, first row → product id "02",
-  // the 2008 Modern Chain). The pill itself just fades away with the
-  // rest of the PLP chrome during phase 1.
-  const sourceTileEl = document.querySelector('.plp__grid .card[data-product-id="02"]');
+  // v2 entry: pill is the click target. The visual morph source is the
+  // 2008 Modern Chain — found by year (data-year). With 63 chronological
+  // tiles, that tile is mid-grid and probably below the fold from the
+  // pill's position at the top of the PLP. We scroll to it first so the
+  // morph starts from a visible position, then the morph fires.
+  const sourceTileEl = document.querySelector('.plp__grid .card[data-year="2008"]');
   if (!sourceTileEl) return;
+  const _tileImg = sourceTileEl.querySelector('.card__img');
+  if (_tileImg) {
+    const r0 = _tileImg.getBoundingClientRect();
+    const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
+                          r0.top - (window.innerHeight - r0.height) / 2;
+    window.scrollTo(0, Math.max(0, desiredScroll));
+    void document.body.offsetHeight;
+  }
   const tileImg = sourceTileEl.querySelector('.card__img');
   if (!tileImg) return;
 

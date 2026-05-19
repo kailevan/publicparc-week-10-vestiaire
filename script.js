@@ -80,6 +80,10 @@ const BAGS = [
   { year: 2025, img: 'assets/bags/2025_25.jpg',               name: 'Chanel 25 · Denim',                price: '€5,900' },
 ];
 
+/* Expose BAGS to plp.js / plp-v2.js so they can derive the full PLP
+   grid from the same canonical source. */
+if (typeof window !== 'undefined') window.BAGS = BAGS;
+
 const HERO_YEAR = 2008;
 
 const DEFAULT_SLIDE_LABELS = ['Product', 'Campaign', 'Runway', 'Press', 'Detail'];
