@@ -132,6 +132,17 @@ body { user-select: none; -webkit-user-select: none; }
      year scrubs past 1955, 1996, 2024, etc. lnum keeps lining figures. */
   font-feature-settings: "lnum" 1, "tnum" 1;
   font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Year digits in a fixed-width inline-block slot. The slot is centered
+   on screen via .year's text-align:center, but inside the slot the
+   digits are LEFT-anchored — so the left edge never shifts as years
+   scrub past (only the right edge moves, by ~3px at most across
+   centuries). Width sized to the widest 4-digit year. */
+.year__digits {
+  display: inline-block;
+  min-width: 2.95ch;
+  text-align: left;
   /* Transform: browse↔PDP scale. Opacity: PLP→browse reveal (year leads). */
   transition: transform 500ms var(--easing) 50ms,
               opacity 350ms var(--easing) 50ms;
@@ -817,10 +828,11 @@ body[data-state="pdp"] .app {
    fade PLP children to 0. When state flips to `browse` we just SNAP the
    container to hidden (no transition) so there's no double-fade.
 
-   Exit (browse → plp): the default `transition: opacity 350ms` on
-   .plp-view kicks in, PLP fades back to visible smoothly. */
+   Exit (browse → plp): the default `transition: opacity 500ms` on
+   .plp-view kicks in. Slower fade-in gives the bag time to fully settle
+   into its tile position before the PLP comes back. */
 .plp-view {
-  transition: opacity 350ms var(--easing), visibility 0ms 0ms;
+  transition: opacity 500ms var(--easing), visibility 0ms 0ms;
 }
 body[data-state="browse"] .plp-view,
 body[data-state="pdp"] .plp-view {

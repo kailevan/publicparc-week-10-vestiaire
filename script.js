@@ -194,6 +194,7 @@ const PX_PER_SLIDE = 80;   // PDP tick spacing
 // ---------- DOM refs ------------------------------------------------
 const app        = document.querySelector('.app');
 const yearEl     = document.querySelector('.year');
+const yearDigits = document.querySelector('.year__digits');
 const bagNameEl  = document.querySelector('.bagname');
 const buyBarName = document.querySelector('.buybar__name');
 const strip      = document.getElementById('strip');
@@ -433,7 +434,7 @@ function syncFromTx() {
   if (mode === 'browse') {
     yearF = clamp(yearForTx(tx), YEAR_MIN, YEAR_MAX);
     const yi = Math.round(yearF);
-    yearEl.textContent = yi;
+    if (yearDigits) yearDigits.textContent = yi; else yearEl.textContent = yi;
     strip.setAttribute('aria-valuenow', String(yi));
     const bag = nearestBag(yi);
     showBag(bag);
@@ -592,7 +593,7 @@ function enterPDP() {
   mode = 'pdp';
   app.dataset.mode = 'pdp';
 
-  yearEl.textContent = lockedBag.year;
+  if (yearDigits) yearDigits.textContent = lockedBag.year; else yearEl.textContent = lockedBag.year;
   buyPrice.textContent = lockedBag.price;
   bagNameEl.textContent = lockedBag.name;
   if (buyBarName) buyBarName.textContent = lockedBag.name;
