@@ -78,6 +78,7 @@ const BAGS = [
   { year: 2023, img: 'assets/bags/2023_kelly.jpg',            name: 'Kelly · Caviar',                   price: '€6,800' },
   { year: 2024, img: 'assets/bags/2024_star.jpg',             name: 'Walk of Fame Star · Patent',       price: '€3,100' },
   { year: 2025, img: 'assets/bags/2025_25.jpg',               name: 'Chanel 25 · Denim',                price: '€5,900' },
+  { year: 2026, img: 'assets/bags/2026_blazy.jpg',            name: 'Chanel 26 · Calfskin',             price: '€6,400' },
 ];
 
 /* Expose BAGS to plp.js / plp-v2.js so they can derive the full PLP

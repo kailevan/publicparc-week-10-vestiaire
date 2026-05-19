@@ -6,11 +6,24 @@
      prototype, with the selected bag's year as the landing year.
 --------------------------------------------------------------- */
 
-/* PLP grid — every bag in the year slider (63 entries, chronological
-   from 1955 to 2025) becomes a PLP tile. v2's year-pill always enters
-   at the 2008 Modern Chain (found by data-year), but on exit the PLP
-   scrolls to whichever year the user actually scrubbed to. */
-const PRODUCTS = (window.BAGS || []).map((bag, i) => {
+/* PLP grid — derived from window.BAGS. v2 uses a special ordering:
+   tile #1 (top-left)  = 1955 (the 2.55, oldest)
+   tile #2 (top-right) = 2026 (Chanel 26, newest / Blazy's upcoming)
+   tile #3+            = 1956 onwards chronologically
+   So "the first and the latest, then everything in between." The
+   View timeline CTA morphs from tile #2 (2026). */
+const _bagsRaw = (window.BAGS || []).slice();
+const _2026Idx = _bagsRaw.findIndex(b => b.year === 2026);
+let _bagsOrdered;
+if (_2026Idx >= 0) {
+  const _2026 = _bagsRaw.splice(_2026Idx, 1)[0];
+  _bagsRaw.splice(1, 0, _2026);
+  _bagsOrdered = _bagsRaw;
+} else {
+  _bagsOrdered = _bagsRaw;
+}
+
+const PRODUCTS = _bagsOrdered.map((bag, i) => {
   const id = String(i + 1).padStart(2, '0');
   return {
     id,
@@ -416,21 +429,14 @@ if (appEl) {
 function morphFilterToPrototype(filterBtn) {
   if (!morphClone || !window.protoApi) return;
 
-  // v2 entry: pill is the click target. The visual morph source is the
-  // 2008 Modern Chain — found by year (data-year). With 63 chronological
-  // tiles, that tile is mid-grid and probably below the fold from the
-  // pill's position at the top of the PLP. We scroll to it first so the
-  // morph starts from a visible position, then the morph fires.
-  const sourceTileEl = document.querySelector('.plp__grid .card[data-year="2008"]');
+  // v2 entry: "View timeline" is the click target. The visual morph
+  // source is the 2026 Chanel 26 bag, which sits at tile #2 (top-right)
+  // — the most prominent above-the-fold slot. PLP is already showing it
+  // when the user clicks the CTA (it's at the top), so no scroll needed
+  // for entry.
+  const sourceTileEl = document.querySelector('.plp__grid .card[data-year="2026"]');
   if (!sourceTileEl) return;
-  const _tileImg = sourceTileEl.querySelector('.card__img');
-  if (_tileImg) {
-    const r0 = _tileImg.getBoundingClientRect();
-    const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
-                          r0.top - (window.innerHeight - r0.height) / 2;
-    window.scrollTo(0, Math.max(0, desiredScroll));
-    void document.body.offsetHeight;
-  }
+  // 2026 tile is at top of PLP, no scroll needed for entry.
   const tileImg = sourceTileEl.querySelector('.card__img');
   if (!tileImg) return;
 
