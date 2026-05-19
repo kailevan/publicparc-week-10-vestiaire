@@ -214,16 +214,11 @@ body { user-select: none; -webkit-user-select: none; }
   opacity: 0;
   pointer-events: none;
   transition: opacity 260ms var(--easing);
-  /* Scrollbar styling: hairline, only on hover */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.18) transparent;
+  /* Scrollbar hidden — content is scrollable via touch/wheel but no
+     visible track or thumb (cleaner editorial feel). */
+  scrollbar-width: none;
 }
-.story-card::-webkit-scrollbar { width: 4px; }
-.story-card::-webkit-scrollbar-track { background: transparent; }
-.story-card::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.18);
-  border-radius: 4px;
-}
+.story-card::-webkit-scrollbar { display: none; }
 
 /* No fade gradient — stories are short enough (~80–150 words) to read in
    one screen without scrolling. The earlier ::after gradient was always
@@ -952,9 +947,14 @@ body[data-state="morphing"] .app .hdr__context {
 
 body[data-state="browse"] .plp-back { display: block; }
 
-/* The .app's internal .back arrow (browse→PDP exit) and .plp-back must
-   not collide: .back only shows in PDP, .plp-back only in browse — so
-   one or the other, never both. */
+/* The .app's internal .back arrow (PDP → browse) and .plp-back
+   (browse → PLP) must not collide. body[data-state] doesn't change when
+   the app flips between browse↔pdp, so we also need to hide .plp-back
+   whenever .app is in pdp mode. Otherwise both arrows stack on the
+   top-left and tapping the wrong one skips past year-mode entirely. */
+body[data-state="browse"]:has(.app[data-mode="pdp"]) .plp-back {
+  display: none;
+}
 
 /* ===============================================================
    PHASE A: clone becomes the permanent bag — no handoff
