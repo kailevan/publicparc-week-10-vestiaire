@@ -193,8 +193,16 @@ function morphTileToPrototype(tile) {
   }, T_FADE_PLP + T_EXPAND + T_BUFFER);
 }
 
-// Reverse morph: back to PLP. The clone shrinks to the source element's
-// rect (tile image or chip thumb), then fades out.
+// Reverse morph: back to PLP. Strict reverse of the entry choreography:
+//   0–200ms: browse UI (year, strip, buy bar, bag name, back arrow)
+//            fade out so the only thing left on a white screen is the
+//            bag image (the clone).
+//   200–950ms: clone shrinks to the source element's rect.
+//   950ms: state flips to 'plp' — the PLP fades in.
+//   950–1150ms: clone fades out (handing off to the PLP tile).
+// Throughout the shrink, the PLP stays hidden so the page behind doesn't
+// peek through. (PLP is kept in layout via CSS visibility:hidden so we
+// can measure the source rect without flipping state first.)
 function morphPrototypeToPlp() {
   if (!sourceTile || !morphClone) {
     document.body.dataset.state = 'plp';
@@ -215,14 +223,29 @@ function morphPrototypeToPlp() {
     return;
   }
 
-  // Flip state→plp so the source's layout is restored, then measure.
-  document.body.dataset.state = 'plp';
-  unlockBodyScroll();
+  // Phase 1: hide browse UI immediately. PLP stays hidden (CSS).
+  const T_UI_FADE = 200;
+  const browseUiEls = [
+    document.querySelector('.app .year'),
+    document.querySelector('.app .strip'),
+    document.querySelector('.app .buybar'),
+    document.querySelector('.app .bagname'),
+    document.querySelector('.app .back'),
+    document.querySelector('.app .hdr__context'),
+    document.getElementById('plpBack'),
+    document.getElementById('storyCard'),
+  ];
+  browseUiEls.forEach(el => {
+    if (!el) return;
+    el.style.transition = `opacity ${T_UI_FADE}ms ease`;
+    el.style.opacity = '0';
+  });
+
+  // PLP is kept in layout (CSS visibility:hidden), so we can measure
+  // the source tile's rect right now.
   void source.offsetWidth;
   const endRect = sourceEl.getBoundingClientRect();
 
-  // Reverse animation — shrink to source rect; re-morph shape back to
-  // whatever the source's natural shape was (circle / pill / square).
   const endRadius = isChip   ? '50%'
                   : isFilter ? `${endRect.height / 2}px`
                   : '0';
@@ -230,28 +253,42 @@ function morphPrototypeToPlp() {
                   : isFilter ? '#ffffff'
                   : '#f1efe9';
 
-  morphClone.style.transition = [
-    `left ${T_EXPAND}ms ${EASE_EXPAND}`,
-    `top ${T_EXPAND}ms ${EASE_EXPAND}`,
-    `width ${T_EXPAND}ms ${EASE_EXPAND}`,
-    `height ${T_EXPAND}ms ${EASE_EXPAND}`,
-    `border-radius ${T_EXPAND}ms ${EASE_EXPAND}`,
-    `background ${T_FADE_PLP}ms ease`,
-  ].join(', ');
-  morphClone.style.background = endBg;
-  morphClone.style.borderRadius = endRadius;
-  morphClone.style.left   = `${endRect.left}px`;
-  morphClone.style.top    = `${endRect.top}px`;
-  morphClone.style.width  = `${endRect.width}px`;
-  morphClone.style.height = `${endRect.height}px`;
-
+  // Phase 2: shrink the clone to the source rect, starting after the UI fade.
   setTimeout(() => {
+    morphClone.style.transition = [
+      `left ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `top ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `width ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `height ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `border-radius ${T_EXPAND}ms ${EASE_EXPAND}`,
+      `background ${T_FADE_PLP}ms ease`,
+    ].join(', ');
+    morphClone.style.background = endBg;
+    morphClone.style.borderRadius = endRadius;
+    morphClone.style.left   = `${endRect.left}px`;
+    morphClone.style.top    = `${endRect.top}px`;
+    morphClone.style.width  = `${endRect.width}px`;
+    morphClone.style.height = `${endRect.height}px`;
+  }, T_UI_FADE);
+
+  // Phase 3: clone is back at the tile rect → reveal PLP, fade clone out.
+  setTimeout(() => {
+    document.body.dataset.state = 'plp';
+    unlockBodyScroll();
     source.classList.remove('card--is-source');
     source.classList.remove('chip--is-source');
     source.classList.remove('hot-filter--is-source');
+
+    // Restore browse UI inline styles so they're clean for next entry.
+    browseUiEls.forEach(el => {
+      if (!el) return;
+      el.style.transition = '';
+      el.style.opacity = '';
+    });
+
     morphClone.style.transition = 'opacity 200ms ease';
     morphClone.style.opacity = '0';
-  }, T_EXPAND);
+  }, T_UI_FADE + T_EXPAND);
 
   setTimeout(() => {
     morphClone.classList.remove('is-active');
@@ -260,7 +297,7 @@ function morphPrototypeToPlp() {
     morphClone.style.background = '';
     morphClone.style.borderRadius = '';
     sourceTile = null;
-  }, T_EXPAND + 250);
+  }, T_UI_FADE + T_EXPAND + 250);
 }
 
 // Keep clone aligned with the .bag's screen rect on viewport changes

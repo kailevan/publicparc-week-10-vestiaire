@@ -128,7 +128,10 @@ body { user-select: none; -webkit-user-select: none; }
   text-align: center;
   letter-spacing: -0.02em;
   margin-top: 18px;
-  font-feature-settings: "lnum" 1;
+  /* tabular-nums = all digit widths equal → no horizontal shift as the
+     year scrubs past 1955, 1996, 2024, etc. lnum keeps lining figures. */
+  font-feature-settings: "lnum" 1, "tnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
   /* Transform: browse↔PDP scale. Opacity: PLP→browse reveal (year leads). */
   transition: transform 500ms var(--easing) 50ms,
               opacity 350ms var(--easing) 50ms;
@@ -222,18 +225,10 @@ body { user-select: none; -webkit-user-select: none; }
   border-radius: 4px;
 }
 
-/* Fade gradient at bottom of story card — hints "more below" when overflowing */
-.story-card::after {
-  content: '';
-  position: sticky;
-  display: block;
-  bottom: -18px;
-  left: 0; right: 0;
-  height: 32px;
-  margin-top: -32px;
-  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #ffffff 80%);
-  pointer-events: none;
-}
+/* No fade gradient — stories are short enough (~80–150 words) to read in
+   one screen without scrolling. The earlier ::after gradient was always
+   covering the last line whether or not there was actually more content
+   below. Removed. */
 
 body[data-slide-type="story"] .story-card {
   opacity: 1;
@@ -780,10 +775,25 @@ body[data-state="pdp"] .app {
   transition: opacity 350ms var(--easing), visibility 0ms 0ms;
 }
 
-/* In prototype mode, PLP is fully removed from layout */
+/* In prototype mode, PLP is visually hidden but kept in layout — so the
+   reverse morph can measure the source tile's screen rect without
+   re-flowing the page.
+
+   Entry (plp → browse): the per-element rules in `morphing` state already
+   fade PLP children to 0. When state flips to `browse` we just SNAP the
+   container to hidden (no transition) so there's no double-fade.
+
+   Exit (browse → plp): the default `transition: opacity 350ms` on
+   .plp-view kicks in, PLP fades back to visible smoothly. */
+.plp-view {
+  transition: opacity 350ms var(--easing), visibility 0ms 0ms;
+}
 body[data-state="browse"] .plp-view,
 body[data-state="pdp"] .plp-view {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0ms, visibility 0ms;
 }
 
 /* ---------- MORPHING STATE: choreographed fade --------------- */
