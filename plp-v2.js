@@ -149,6 +149,8 @@ function morphTileToPrototype(tile) {
   const bagLayer = window.protoApi.getBagEl();
   const bagnameEl = document.querySelector('.bagname');
   if (bagnameEl) bagnameEl.textContent = bagName;
+  const buyBarName = document.querySelector('.buybar__name');
+  if (buyBarName) buyBarName.textContent = bagName;
 
   // Measure the bag's eventual screen rect (target)
   const targetRect = bagLayer.getBoundingClientRect();
@@ -408,6 +410,8 @@ function morphFilterToPrototype(filterBtn) {
   const bagLayer = window.protoApi.getBagEl();
   const bagnameEl = document.querySelector('.bagname');
   if (bagnameEl) bagnameEl.textContent = bagName;
+  const buyBarName = document.querySelector('.buybar__name');
+  if (buyBarName) buyBarName.textContent = bagName;
   const targetRect = bagLayer.getBoundingClientRect();
 
   // Position clone at the tile rect, cream background to match PLP card
