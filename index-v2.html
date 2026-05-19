@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#ffffff" />
   <title>Chanel bag — Vestiaire Collective · v2</title>
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=15" />
 </head>
 <body data-state="plp">
 
@@ -19,8 +19,16 @@
     </header>
 
     <section class="plp__title">
-      <h1 class="plp__h1">Chanel Bag</h1>
-      <p class="plp__count">— 247 Results</p>
+      <div class="plp__title-text">
+        <h1 class="plp__h1">Chanel Bag</h1>
+        <p class="plp__count">— 247 Results</p>
+      </div>
+      <button class="plp__view-timeline" id="viewTimelineBtn" type="button">
+        View timeline
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8 H13 M10 5 L13 8 L10 11"/>
+        </svg>
+      </button>
     </section>
 
     <ul class="plp__chips" id="plpChips">
@@ -47,7 +55,6 @@
     </ul>
 
     <ul class="plp__hotfilters" id="plpHotfilters">
-      <li><button class="hot-filter hot-filter--year" id="filterByYear" data-year="1996">Year <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
       <li><button class="hot-filter">Sort By <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
       <li><button class="hot-filter">Duty Free</button></li>
       <li><button class="hot-filter">Category <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4 L6 8 L10 4"/></svg></button></li>
@@ -178,8 +185,8 @@
     </svg>
   </button>
 
-  <script src="assets/stories.js?v=6"></script>
-  <script src="script.js?v=6"></script>
-  <script src="plp-v2.js?v=6"></script>
+  <script src="assets/stories.js?v=7"></script>
+  <script src="script.js?v=7"></script>
+  <script src="plp-v2.js?v=7"></script>
 </body>
 </html>

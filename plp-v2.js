@@ -497,10 +497,10 @@ function morphFilterToPrototype(filterBtn) {
   }, T_FADE_PLP + T_EXPAND + T_BUFFER);
 }
 
-// Wire the "Year" hot-filter click
-const filterByYear = document.getElementById('filterByYear');
-if (filterByYear) {
-  filterByYear.addEventListener('click', () => morphFilterToPrototype(filterByYear));
+// Wire the "View timeline" CTA (sits next to the Chanel Bag title)
+const viewTimelineBtn = document.getElementById('viewTimelineBtn');
+if (viewTimelineBtn) {
+  viewTimelineBtn.addEventListener('click', () => morphFilterToPrototype(viewTimelineBtn));
 }
 
 // ---------- Back-to-PLP from prototype browse mode ---------------

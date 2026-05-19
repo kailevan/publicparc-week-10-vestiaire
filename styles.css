@@ -571,8 +571,19 @@ body.plp-body {
 }
 
 /* Title block ---------------------------------------------------- */
+/* v2: "View timeline →" CTA sits flush-right next to the H1. v1 has
+   no such button and the .plp__title-text wrapper is absent — the H1
+   still works because it's a direct child either way. */
 .plp__title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
   padding: 16px 20px 8px;
+}
+.plp__title-text {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .plp__h1 {
   font-family: var(--serif);
@@ -590,6 +601,31 @@ body.plp-body {
   color: #777;
   margin: 4px 0 0;
 }
+
+/* View timeline button (v2 only) — replaces the previous "Year" pill
+   that lived in the filter row. Year-mode is its own EXPERIENCE, not
+   a filter, so the CTA is hoisted out of the filter row and into the
+   title area as a black pill on the right. */
+.plp__view-timeline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 6px;
+  transition: opacity 180ms ease;
+}
+.plp__view-timeline:active { opacity: 0.7; }
 
 /* Chips (guided search) ----------------------------------------- */
 .plp__chips,
