@@ -89,18 +89,19 @@ const HERO_YEAR = 2008;
 
 const DEFAULT_SLIDE_LABELS = ['Product', 'Campaign', 'Runway', 'Press', 'Detail'];
 
-// Editorial slides per significant bag. Each entry is curated from
-// verified sources: Vogue Scandinavia's 2.55 archive series, Vogue
-// Runway, Schön Magazine, Grazia, Hypebae, Maison de Chanel CA.
-// Captions credit photographer / model / venue / year when known.
-// Slide 0 is null — the product photo, handled in showEditorial.
+// Editorial slides per significant bag. Audited: every slide here was
+// opened and visually verified to actually show the named bag. 14 slides
+// from a previous pass were removed because they showed: (a) a different
+// Chanel bag from the same show that the ML alt-tagger had mis-flagged,
+// or (b) no bag at all (the model carrying it in a different look). The
+// files are still on disk under assets/editorial/ — they're just no
+// longer referenced.
 const EDITORIAL_CURATED = {
   1955: [
     null,
     { src: 'assets/editorial/1955_255_coco-1957.jpeg',     label: 'Gabrielle Chanel, 1957' },
     { src: 'assets/editorial/1955_255_tuileries-1960.jpeg', label: 'Tuileries, Rizzo, 1960' },
     { src: 'assets/editorial/1955_255_anouk-1960.jpg',     label: 'Anouk Aimée, Rome, 1960' },
-    { src: 'assets/editorial/1955_255_romy-1962.jpeg',     label: 'Romy Schneider, 1962' },
     { src: 'assets/editorial/1955_255_jackieo-1968.jpg',   label: 'Jackie O., London, 1968' },
   ],
   1983: [
@@ -112,62 +113,36 @@ const EDITORIAL_CURATED = {
   ],
   1997: [
     null,
-    { src: 'assets/editorial/1997_woc_a.jpeg', label: 'Archive' },
-    { src: 'assets/editorial/1997_woc_c.jpg',  label: 'Editorial' },
+    { src: 'assets/editorial/1997_woc_c.jpg', label: 'Pink WOC, star charm' },
   ],
   2005: [
     null,
-    { src: 'assets/editorial/2005_reissue_b.jpg', label: 'Campaign' },
-    { src: 'assets/editorial/2005_reissue_a.jpg', label: 'Runway detail' },
+    { src: 'assets/editorial/2005_reissue_a.jpg', label: 'Reissue 2.55, runway detail' },
   ],
   2011: [
     null,
-    { src: 'assets/editorial/2011_boy_runway-freja.jpg',  label: 'Freja Beha, FW11 opening' },
-    { src: 'assets/editorial/2011_boy_runway-saskia.jpg', label: 'Saskia de Brauw, FW11' },
-    { src: 'assets/editorial/2011_boy_a.jpg',             label: 'Archive Boy' },
-    { src: 'assets/editorial/2011_boy_c.jpg',             label: 'Pink Boy detail' },
-  ],
-  2014: [
-    null,
-    { src: 'assets/editorial/2014_graffiti_ss14-cara.jpg',   label: 'Cara, SS14 opening' },
-    { src: 'assets/editorial/2014_graffiti_ss14-runway.jpg', label: 'Chanel SS14 runway' },
+    { src: 'assets/editorial/2011_boy_a.jpg', label: 'Boy bag archive variants' },
+    { src: 'assets/editorial/2011_boy_c.jpg', label: 'Pink velvet Boy detail' },
   ],
   2017: [
     null,
-    { src: 'assets/editorial/2017_gabrielle_ss17-teddy.jpg', label: 'Teddy Quinlivan, SS17' },
-    { src: 'assets/editorial/2017_gabrielle_ss17-kyle.jpg',  label: 'Kyle Howell, SS17' },
-    { src: 'assets/editorial/2017_gabrielle_ss17-katie.jpg', label: 'Katie Moore, SS17' },
-  ],
-  2018: [
-    null,
-    { src: 'assets/editorial/2018_31_couture-lauren.jpg', label: 'Lauren de Graaf, SS18 Couture' },
+    { src: 'assets/editorial/2017_gabrielle_ss17-katie.jpg', label: 'Gabrielle Drawstring, SS17' },
   ],
   2019: [
     null,
-    { src: 'assets/editorial/2019_19_ss20-faretta.jpg', label: 'Faretta, post-Karl SS20' },
-    { src: 'assets/editorial/2019_19_a.jpg',            label: 'Campaign' },
-    { src: 'assets/editorial/2019_19_b.jpg',            label: 'Editorial, Paris' },
-    { src: 'assets/editorial/2019_19_c.jpg',            label: 'Neon edition' },
+    { src: 'assets/editorial/2019_19_a.jpg', label: 'Navy 19 campaign' },
+    { src: 'assets/editorial/2019_19_b.jpg', label: 'Green tweed 19' },
+    { src: 'assets/editorial/2019_19_c.jpg', label: 'Neon edition' },
   ],
   2022: [
     null,
-    { src: 'assets/editorial/2022_22_campaign-1.jpg', label: 'Inez & Vinoodh campaign' },
-    { src: 'assets/editorial/2022_22_campaign-2.jpg', label: 'Ensemble cast' },
-    { src: 'assets/editorial/2022_22_ss22-runway.jpg', label: 'SS22 opening' },
-    { src: 'assets/editorial/2022_22_campaign-4.jpg', label: 'Seoul' },
-  ],
-  2023: [
-    null,
-    { src: 'assets/editorial/2023_kelly_fw23-opening.jpg', label: 'FW23 opening look' },
-    { src: 'assets/editorial/2023_kelly_fw23-look2.jpg',   label: 'FW23 look 2' },
+    { src: 'assets/editorial/2022_22_ss22-runway.jpg', label: 'SS22 runway' },
   ],
   2025: [
     null,
-    { src: 'assets/editorial/2025_25_dua.webp',           label: 'Dua Lipa campaign' },
-    { src: 'assets/editorial/2025_25_jennie-sims-1.jpg',  label: 'Jennie, David Sims' },
+    { src: 'assets/editorial/2025_25_dua.webp',            label: 'Dua Lipa campaign' },
+    { src: 'assets/editorial/2025_25_jennie-sims-1.jpg',   label: 'Jennie, David Sims' },
     { src: 'assets/editorial/2025_25_robbie-gondry-1.jpg', label: 'Margot, Michel Gondry' },
-    { src: 'assets/editorial/2025_25_product-hero.jpg',   label: 'Product hero' },
-    { src: 'assets/editorial/2025_25_ss25-runway.jpg',    label: 'SS25 opening' },
   ],
 };
 
