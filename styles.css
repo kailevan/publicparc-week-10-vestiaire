@@ -272,7 +272,7 @@ body[data-slide-type="story"] #morphClone {
    release. Same strip handles editorial slides in PDP. */
 .strip {
   position: relative;
-  height: 64px;
+  height: 82px;
   margin: 12px 0 18px;
   overflow: hidden;
   touch-action: none;
