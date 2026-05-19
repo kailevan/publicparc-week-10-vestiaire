@@ -300,19 +300,32 @@ body[data-slide-type="story"] #morphClone {
 .app[data-mode="browse"] .strip__rail--browse { opacity: 1; }
 .app[data-mode="pdp"]    .strip__rail--pdp    { opacity: 1; }
 
-/* The fixed center reference — a thin black vertical hairline
-   slightly taller than the major ticks. */
+/* Indicator — slim serif "I" mark (thin vertical hairline with tiny
+   horizontal serif feet at top and bottom). Reads as typography rather
+   than instrument chrome. */
 .strip__indicator {
   position: absolute;
   left: 50%;
-  top: 8px;
-  bottom: 14px;
+  top: 6px;
+  bottom: 18px;
   width: 1px;
   background: var(--fg);
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 2;
 }
+.strip__indicator::before,
+.strip__indicator::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 1px;
+  background: var(--fg);
+  transform: translateX(-50%);
+}
+.strip__indicator::before { top: 0; }
+.strip__indicator::after  { bottom: 0; }
 
 /* Soft fade at the strip edges so ticks don't snap visually
    into existence; gives the picker a "wheel" depth. */
@@ -327,41 +340,58 @@ body[data-slide-type="story"] #morphClone {
 .strip__fade--right { right: 0; background: linear-gradient(to left,  var(--bg), rgba(255,255,255,0)); }
 
 /* Each tick is positioned absolutely along the rail. JS computes
-   the rail width and the per-tick left offset (= year - 1955) * pxPerYear). */
+   the rail width and the per-tick left offset.
+
+   Per-year minor ticks are kept in DOM (for hit-testing during scrub)
+   but rendered transparent — the magnetic snap still works, the strip
+   just doesn't look like a Rolex bezel. */
 .tick {
   position: absolute;
   top: 0;
   width: 1px;
-  height: 10px;
-  background: var(--hairline);
+  height: 8px;
+  background: transparent;
   transform: translateX(-50%);
 }
+/* Decade markers — soft hairline, not the bold black it was before */
 .tick--major {
-  height: 18px;
+  height: 10px;
   width: 1px;
-  background: var(--fg);
+  background: rgba(0,0,0,0.22);
 }
+/* Decade label: italic Albra Display, editorial / magazine vibe */
 .tick__label {
   position: absolute;
-  top: 24px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--fg-soft);
   white-space: nowrap;
+  /* Reset tabular-nums inherited from .year — italic serif looks better
+     with its native proportional figures */
+  font-feature-settings: normal;
+  font-variant-numeric: normal;
 }
+/* PDP editorial ticks: short soft hairline, sentence-case Helvetica
+   Now Text label — same grey weight as the PLP card location text */
 .tick--editorial {
-  height: 14px;
-  background: var(--fg);
+  height: 8px;
+  background: rgba(0,0,0,0.22);
 }
 .tick--editorial .tick__label {
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: none;
   color: var(--fg-soft);
-  font-size: 9px;
-  top: 20px;
+  top: 14px;
 }
 
 /* Back arrow (PDP only) ----------------------------------------- */
