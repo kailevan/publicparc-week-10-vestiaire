@@ -6,25 +6,29 @@
      prototype, with the selected bag's year as the landing year.
 --------------------------------------------------------------- */
 
+/* PLP grid — 15 significant Chanel bags + 3 notable, all real Vestiaire
+   photos. Tile #2 stays the 2008 Modern Chain (v2 morph source). In v2,
+   tiles do NOT trigger the morph (only the Year pill does) but their
+   images still represent real Chanel models. */
 const PRODUCTS = [
-  { id: '01', img: 'assets/plp/01.jpg', name: 'Timeless/Classique leather clutch bag', price: '$363', location: 'United States', year: 1995 },
-  { id: '02', img: 'assets/bags/2008.webp', name: 'Modern Chain leather handbag',     price: '$3,100', location: 'United States', year: 2008 },
-  { id: '03', img: 'assets/plp/03.jpg', name: 'Wallet On Chain Double C leather crossbody bag', price: '$920', location: 'United States', year: 2014 },
-  { id: '04', img: 'assets/plp/04.jpg', name: 'Timeless/Classique leather crossbody bag', price: '$1,898', location: 'United States', year: 1983 },
-  { id: '05', img: 'assets/plp/05.jpg', name: 'Handbag',                                  price: '$736', location: 'United States', year: 1999 },
-  { id: '06', img: 'assets/plp/06.jpg', name: 'Leather tote',                             price: '$807', location: 'United States', year: 2003 },
-  { id: '07', img: 'assets/plp/07.jpg', name: 'Leather handbag',                          price: '$1,570', location: 'United States', year: 1990 },
-  { id: '08', img: 'assets/plp/08.jpg', name: 'Coco Handle leather handbag',              price: '$2,577', location: 'United States', year: 2017, tag: 'vintage' },
-  { id: '09', img: 'assets/plp/09.jpg', name: 'Bowling Bag cloth handbag',                price: '$748', location: 'United States', year: 1994, tag: 'vintage' },
-  { id: '10', img: 'assets/plp/10.jpg', name: 'Petite Shopping Tote leather tote',        price: '$916', location: 'United States', year: 1996, tag: 'vintage' },
-  { id: '11', img: 'assets/plp/11.jpg', name: 'Grand shopping handbag',                   price: '$728', location: 'United States', year: 2003, tag: 'vintage' },
-  { id: '12', img: 'assets/plp/12.jpg', name: 'Wallet On Chain Boy leather crossbody bag', price: '$748', location: 'United States', year: 2011 },
-  { id: '13', img: 'assets/plp/13.jpg', name: 'Tote',                                     price: '$408', location: 'United States', year: 2021 },
-  { id: '14', img: 'assets/plp/14.jpg', name: '2.55 leather handbag',                     price: '$1,610', location: 'United States', year: 1955 },
-  { id: '15', img: 'assets/plp/15.jpg', name: 'Wallet On Chain Cambon leather crossbody bag', price: '$909', location: 'United States', year: 2019 },
-  { id: '16', img: 'assets/plp/16.jpg', name: 'Timeless/Classique leather handbag',       price: '$4,300', location: 'United States', year: 2023 },
-  { id: '17', img: 'assets/plp/17.jpg', name: '2.55 leather handbag',                     price: '$1,725', location: 'United States', year: 2026 },
-  { id: '18', img: 'assets/plp/18.jpg', name: 'Leather handbag',                          price: '$837', location: 'United States', year: 2026 },
+  { id: '01', img: 'assets/bags/1997_woc.jpg',             name: 'Wallet on Chain leather crossbody bag', price: '$920',   location: 'United States', year: 1997, tag: 'vintage' },
+  { id: '02', img: 'assets/bags/2008.webp',                name: 'Modern Chain leather handbag',          price: '$3,100', location: 'United States', year: 2008 },
+  { id: '03', img: 'assets/bags/1983_classic-flap.jpg',    name: 'Timeless Classique leather handbag',    price: '$4,500', location: 'United States', year: 1983, tag: 'vintage' },
+  { id: '04', img: 'assets/bags/2017_gabrielle.jpg',       name: 'Gabrielle leather handbag',             price: '$3,200', location: 'United States', year: 2017 },
+  { id: '05', img: 'assets/bags/1955_255.jpg',             name: '2.55 leather handbag',                  price: '$5,800', location: 'United States', year: 1955, tag: 'vintage' },
+  { id: '06', img: 'assets/bags/2011_boy.jpg',             name: 'Boy denim patchwork handbag',           price: '$2,950', location: 'United States', year: 2011 },
+  { id: '07', img: 'assets/bags/2022_22.jpg',              name: 'Chanel 22 leather tote',                price: '$4,800', location: 'United States', year: 2022 },
+  { id: '08', img: 'assets/bags/2014_graffiti.jpg',        name: 'Graffiti canvas backpack',              price: '$4,200', location: 'United States', year: 2014 },
+  { id: '09', img: 'assets/bags/1994_supermodel.jpg',      name: 'Vintage CC Chain leather tote',         price: '$2,750', location: 'United States', year: 1994, tag: 'vintage' },
+  { id: '10', img: 'assets/bags/2019_19.jpg',              name: 'Chanel 19 goatskin handbag',            price: '$4,400', location: 'United States', year: 2019 },
+  { id: '11', img: 'assets/bags/1992_vanity-case.jpg',     name: 'Vanity Case lambskin handbag',          price: '$2,400', location: 'United States', year: 1992, tag: 'vintage' },
+  { id: '12', img: 'assets/bags/2025_25.jpg',              name: 'Chanel 25 denim handbag',               price: '$5,200', location: 'United States', year: 2025 },
+  { id: '13', img: 'assets/bags/2005_reissue-255.jpg',     name: 'Reissue 2.55 calfskin handbag',         price: '$5,400', location: 'United States', year: 2005 },
+  { id: '14', img: 'assets/bags/2023_kelly.jpg',           name: 'Kelly top handle leather handbag',      price: '$5,800', location: 'United States', year: 2023 },
+  { id: '15', img: 'assets/bags/2018_31.jpg',              name: '31 leather handbag',                    price: '$4,900', location: 'United States', year: 2018 },
+  { id: '16', img: 'assets/bags/1995_diana.jpg',           name: 'Diana vintage leather handbag',         price: '$1,950', location: 'United States', year: 1995, tag: 'vintage' },
+  { id: '17', img: 'assets/bags/2004_cambon.jpg',          name: 'Cambon lambskin tote',                  price: '$1,800', location: 'United States', year: 2004 },
+  { id: '18', img: 'assets/bags/2015_girl.jpg',            name: 'Girl lambskin handbag',                 price: '$2,100', location: 'United States', year: 2015 },
 ];
 
 const LEAF_SVG       = `<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1f7a4f" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13 C3 7 7 3 13 3 C13 9 9 13 3 13 Z M5 11 L11 5"/></svg>`;

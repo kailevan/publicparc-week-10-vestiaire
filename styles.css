@@ -243,11 +243,14 @@ body[data-slide-type="story"] #morphClone {
 }
 
 /* Bag name -------------------------------------------------------- */
+/* Matches the PLP card name typography (14px / 400 / #333) so the
+   year-mode product info reads as one continuous Vestiaire product. */
 .bagname {
   font-family: var(--sans);
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  color: var(--fg);
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: 0.01em;
+  color: #333;
   text-align: center;
   padding: 14px 24px 0;
   font-weight: 400;
@@ -390,22 +393,29 @@ body[data-slide-type="story"] #morphClone {
     opacity 300ms var(--easing) 280ms;
 }
 
+/* PDP price + product name typography mirrors the PLP card styling
+   (.card__price 14px/700, .card__name 14px/400) so the year-mode PDP
+   reads as a real Vestiaire product page. */
 .buybar__price {
   font-family: var(--sans);
   font-size: 14px;
-  letter-spacing: 0.02em;
-  font-weight: 400;
+  line-height: 21px;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  color: #333;
 }
 
 .buybar__btn {
   font-family: var(--sans);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  font-weight: 700;
   background: var(--fg);
   color: var(--bg);
   border: none;
-  padding: 13px 26px;
+  border-radius: 8px;
+  padding: 12px 22px;
   cursor: pointer;
   transition: opacity 180ms ease;
 }
@@ -421,8 +431,10 @@ body[data-slide-type="story"] #morphClone {
   pointer-events: none;
 }
 
+/* Bag name stays visible in PDP — Vestiaire product pages show product
+   name + price together. */
 .app[data-mode="pdp"] .bagname {
-  opacity: 0;
+  opacity: 1;
 }
 
 .app[data-mode="pdp"] .bag {
