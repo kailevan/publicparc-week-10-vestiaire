@@ -359,21 +359,22 @@ body[data-slide-type="story"] #morphClone {
   width: 1px;
   background: rgba(0,0,0,0.22);
 }
-/* Decade label: italic Albra Display, editorial / magazine vibe */
+/* Decade label: Helvetica Now Text bold — same font as the PDP price
+   (.buybar__price 14px/700/#333). Year numbers and prices read in the
+   same typographic register, so the strip feels of-a-piece with the
+   Vestiaire product info. */
 .tick__label {
   position: absolute;
   top: 14px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--fg-soft);
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #333;
   white-space: nowrap;
-  /* Reset tabular-nums inherited from .year — italic serif looks better
-     with its native proportional figures */
   font-feature-settings: normal;
   font-variant-numeric: normal;
 }
