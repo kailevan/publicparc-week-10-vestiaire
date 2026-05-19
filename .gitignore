@@ -1,7 +1,12 @@
 .DS_Store
 .playwright-mcp/
 week10_*.png
+v2_*.png
 
 # Raw font folder Kai dropped in — we already copied the fonts we need
 # into assets/fonts/ with cleaner names. Keep these out of the repo.
 Helvetica Now Text_HelveticaNowText_Albra/
+
+# Raw research images Kai dropped in (Miloura article screenshots) —
+# we extract names/years visually but don't ship these in the repo.
+bags pics/

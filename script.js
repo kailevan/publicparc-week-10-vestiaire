@@ -7,38 +7,82 @@
 --------------------------------------------------------------- */
 
 // ---------- Data ----------------------------------------------------
-// Milestone bags. The imgs now point at PLP grid jpgs so every year
-// the user scrubs to has a real Chanel photograph as its "placeholder".
-// Year 2008 keeps the original Modern Chain webp (the demo's hero bag).
+// The 15 significant Chanel bags, sourced from real Vestiaire product
+// photos (white-bg shoots). Year 2008 keeps the original Modern Chain
+// webp (the demo hero — matches PLP tile #2).
 const BAGS = [
-  { year: 1955, img: 'assets/plp/14.jpg',     name: '2.55 · Lambskin',           price: '€7,800' },
-  { year: 1983, img: 'assets/plp/04.jpg',     name: '11.12 Classic · Caviar',    price: '€5,400' },
-  { year: 1990, img: 'assets/plp/07.jpg',     name: 'Diana · Lambskin',          price: '€4,650' },
-  { year: 1994, img: 'assets/plp/09.jpg',     name: 'Bowling Bag · Cloth',       price: '€4,200' },
-  { year: 1996, img: 'assets/plp/10.jpg',     name: 'Petite Shopping · Leather', price: '€3,900' },
-  { year: 1999, img: 'assets/plp/05.jpg',     name: 'Kelly Charm · Lambskin',    price: '€4,800' },
-  { year: 2003, img: 'assets/plp/06.jpg',     name: 'Cambon Tote · Lambskin',    price: '€3,400' },
-  { year: 2008, img: 'assets/bags/2008.webp', name: 'Modern Chain · Caviar',     price: '€3,100' },
-  { year: 2011, img: 'assets/plp/12.jpg',     name: 'Boy · Calfskin',            price: '€3,800' },
-  { year: 2014, img: 'assets/plp/03.jpg',     name: 'Wallet on Chain · Leather', price: '€3,600' },
-  { year: 2017, img: 'assets/plp/08.jpg',     name: 'Coco Handle · Calfskin',    price: '€3,950' },
-  { year: 2019, img: 'assets/plp/15.jpg',     name: '19 · Goatskin',             price: '€5,400' },
-  { year: 2021, img: 'assets/plp/13.jpg',     name: '22 · Calfskin',             price: '€5,800' },
-  { year: 2023, img: 'assets/plp/16.jpg',     name: 'Timeless · Caviar',         price: '€6,200' },
-  { year: 2026, img: 'assets/plp/17.jpg',     name: '2.55 · Caviar',             price: '€10,400' },
+  { year: 1955, img: 'assets/bags/1955_255.jpg',          name: '2.55 · Lambskin',           price: '€7,800' },
+  { year: 1983, img: 'assets/bags/1983_classic-flap.jpg', name: 'Timeless Classic · Caviar', price: '€5,400' },
+  { year: 1992, img: 'assets/bags/1992_vanity-case.jpg',  name: 'Vanity Case · Lambskin',    price: '€4,200' },
+  { year: 1994, img: 'assets/bags/1994_supermodel.jpg',   name: 'Supermodel · Calfskin',     price: '€3,650' },
+  { year: 1997, img: 'assets/bags/1997_woc.jpg',          name: 'Wallet on Chain · Caviar',  price: '€2,400' },
+  { year: 2005, img: 'assets/bags/2005_reissue-255.jpg',  name: 'Reissue 2.55 · Calfskin',   price: '€6,200' },
+  { year: 2008, img: 'assets/bags/2008.webp',             name: 'Modern Chain · Caviar',     price: '€3,100' },
+  { year: 2011, img: 'assets/bags/2011_boy.jpg',          name: 'Boy · Denim Patchwork',     price: '€3,800' },
+  { year: 2014, img: 'assets/bags/2014_graffiti.jpg',     name: 'Graffiti · Canvas',         price: '€4,400' },
+  { year: 2017, img: 'assets/bags/2017_gabrielle.jpg',    name: 'Gabrielle · Lambskin',      price: '€3,950' },
+  { year: 2018, img: 'assets/bags/2018_31.jpg',           name: '31 · Lambskin',             price: '€5,800' },
+  { year: 2019, img: 'assets/bags/2019_19.jpg',           name: 'Chanel 19 · Goatskin',      price: '€5,400' },
+  { year: 2022, img: 'assets/bags/2022_22.jpg',           name: 'Chanel 22 · Calfskin',      price: '€5,200' },
+  { year: 2023, img: 'assets/bags/2023_kelly.jpg',        name: 'Kelly · Caviar',            price: '€6,800' },
+  { year: 2025, img: 'assets/bags/2025_25.jpg',           name: 'Chanel 25 · Denim',         price: '€5,900' },
 ];
 
-const HERO_YEAR = 1996;
+const HERO_YEAR = 2008;
 
 const DEFAULT_SLIDE_LABELS = ['Product', 'Campaign', 'Runway', 'Press', 'Detail'];
 
+// Editorial slides per significant bag, sourced from Maison de Chanel CA.
+// Slide 0 (Product) is always the bag itself — null here, handled by
+// showEditorial. Slides 1+ are real archival / editorial / press imagery.
 const EDITORIAL_CURATED = {
-  1996: [
-    { src: 'assets/editorial/1996-01-hero.jpg',     label: 'Product' },
-    { src: 'assets/editorial/1996-02-campaign.jpg', label: 'Campaign' },
-    { src: 'assets/editorial/1996-03-runway.jpg',   label: 'Runway' },
-    { src: 'assets/editorial/1996-04-press.jpg',    label: 'Press' },
-    { src: 'assets/editorial/1996-05-detail.jpg',   label: 'Detail' },
+  1955: [
+    null,
+    { src: 'assets/editorial/1955_255_b.webp', label: 'Coco' },
+    { src: 'assets/editorial/1955_255_a.jpg',  label: 'Press' },
+    { src: 'assets/editorial/1955_255_c.jpg',  label: 'Editorial' },
+  ],
+  1983: [
+    null,
+    { src: 'assets/editorial/1983_classicflap_a.jpg', label: 'Campaign' },
+    { src: 'assets/editorial/1983_classicflap_b.jpg', label: 'Press' },
+    { src: 'assets/editorial/1983_classicflap_c.jpg', label: 'Detail' },
+  ],
+  1997: [
+    null,
+    { src: 'assets/editorial/1997_woc_a.jpeg', label: 'Campaign' },
+    { src: 'assets/editorial/1997_woc_c.jpg',  label: 'Editorial' },
+  ],
+  2005: [
+    null,
+    { src: 'assets/editorial/2005_reissue_a.jpg', label: 'Detail' },
+    { src: 'assets/editorial/2005_reissue_b.jpg', label: 'Press' },
+  ],
+  2011: [
+    null,
+    { src: 'assets/editorial/2011_boy_a.jpg',  label: 'Campaign' },
+    { src: 'assets/editorial/2011_boy_b.webp', label: 'Runway' },
+    { src: 'assets/editorial/2011_boy_c.jpg',  label: 'Press' },
+    { src: 'assets/editorial/2011_boy_d.jpg',  label: 'Detail' },
+  ],
+  2019: [
+    null,
+    { src: 'assets/editorial/2019_19_a.jpg', label: 'Campaign' },
+    { src: 'assets/editorial/2019_19_b.jpg', label: 'Runway' },
+    { src: 'assets/editorial/2019_19_c.jpg', label: 'Detail' },
+  ],
+  2022: [
+    null,
+    { src: 'assets/editorial/2022_22_a.jpg', label: 'Campaign' },
+    { src: 'assets/editorial/2022_22_b.jpg', label: 'Runway' },
+    { src: 'assets/editorial/2022_22_c.jpg', label: 'Detail' },
+  ],
+  2025: [
+    null,
+    { src: 'assets/editorial/2025_25_dua.webp', label: 'Dua Lipa' },
+    { src: 'assets/editorial/2025_25_a.jpg',    label: 'Campaign' },
+    { src: 'assets/editorial/2025_25_b.jpg',    label: 'Press' },
+    { src: 'assets/editorial/2025_25_c.jpg',    label: 'Detail' },
   ],
 };
 

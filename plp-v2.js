@@ -339,21 +339,25 @@ if (appEl) {
 // bag literally emerging from the filter row.
 function morphFilterToPrototype(filterBtn) {
   if (!morphClone || !window.protoApi) return;
-  const year = parseInt(filterBtn.dataset.year, 10) || 1996;
 
-  // Pull the bag image for that year so we know what to grow into.
-  // (script.js's BAGS isn't exposed; we can derive the same way it does
-  // via nearestBag — but here it's simpler to map year → PLP image
-  // directly since v2 has its own PRODUCTS list above.)
-  const targetProduct = PRODUCTS.find(p => p.year === year) || PRODUCTS[1];
-  const imgSrc = targetProduct.img;
+  // v2 entry: pill is the click target, but the visual morph source is the
+  // hero tile in the grid (right column, first row → product id "02",
+  // the 2008 Modern Chain). The pill itself just fades away with the
+  // rest of the PLP chrome during phase 1.
+  const sourceTileEl = document.querySelector('.plp__grid .card[data-product-id="02"]');
+  if (!sourceTileEl) return;
+  const tileImg = sourceTileEl.querySelector('.card__img');
+  if (!tileImg) return;
 
-  sourceTile = filterBtn;
+  const imgSrc = tileImg.currentSrc || tileImg.src;
+  const year = parseInt(sourceTileEl.dataset.year, 10) || 2008;
+  const bagName = sourceTileEl.dataset.bagName || '';
 
-  // Start rect = the pill button's full screen rect
-  const startRect = filterBtn.getBoundingClientRect();
+  sourceTile = sourceTileEl;
 
-  filterBtn.classList.add('hot-filter--is-source');
+  const startRect = tileImg.getBoundingClientRect();
+
+  sourceTileEl.classList.add('card--is-source');
 
   document.body.dataset.state = 'morphing';
   lockBodyScroll();
@@ -361,38 +365,42 @@ function morphFilterToPrototype(filterBtn) {
   // Pre-warm prototype
   window.protoApi.setYear(year);
   const bagLayer = window.protoApi.getBagEl();
+  const bagnameEl = document.querySelector('.bagname');
+  if (bagnameEl) bagnameEl.textContent = bagName;
   const targetRect = bagLayer.getBoundingClientRect();
 
-  // Position clone at the pill rect, white bg + pill curvature
+  // Position clone at the tile rect, cream background to match PLP card
   morphCloneImg.src = imgSrc;
   morphClone.style.transition = 'none';
   morphClone.style.left   = `${startRect.left}px`;
   morphClone.style.top    = `${startRect.top}px`;
   morphClone.style.width  = `${startRect.width}px`;
   morphClone.style.height = `${startRect.height}px`;
-  morphClone.style.borderRadius = `${startRect.height / 2}px`;   // pill shape
-  morphClone.style.background = '#ffffff';
+  morphClone.style.borderRadius = '0';
+  morphClone.style.background = '#f1efe9';
   morphClone.style.opacity = '1';
   morphClone.classList.add('is-active');
   void morphClone.offsetWidth;
 
-  // PHASE 1: nothing extra to animate on the clone yet (white→white);
-  // the PLP elements (and pill chrome) fade via CSS during 0–T_FADE_PLP.
+  // PHASE 1 (0–T_FADE_PLP): fade clone background cream → white in
+  // lockstep with PLP and source tile turning white.
+  requestAnimationFrame(() => {
+    morphClone.style.transition = `background ${T_FADE_PLP}ms ease`;
+    morphClone.style.background = '#ffffff';
+  });
 
-  // PHASE 2: expand pill rect → bag rect, pill curvature → square
+  // PHASE 2: expand the clone to the bag rect.
   setTimeout(() => {
     morphClone.style.transition = [
       `left ${T_EXPAND}ms ${EASE_EXPAND}`,
       `top ${T_EXPAND}ms ${EASE_EXPAND}`,
       `width ${T_EXPAND}ms ${EASE_EXPAND}`,
       `height ${T_EXPAND}ms ${EASE_EXPAND}`,
-      `border-radius ${T_EXPAND}ms ${EASE_EXPAND}`,
     ].join(', ');
     morphClone.style.left   = `${targetRect.left}px`;
     morphClone.style.top    = `${targetRect.top}px`;
     morphClone.style.width  = `${targetRect.width}px`;
     morphClone.style.height = `${targetRect.height}px`;
-    morphClone.style.borderRadius = '0';
   }, T_FADE_PLP);
 
   // PHASE 3: state → browse
