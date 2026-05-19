@@ -7,25 +7,36 @@
 --------------------------------------------------------------- */
 
 // ---------- Data ----------------------------------------------------
-// The 15 significant Chanel bags, sourced from real Vestiaire product
-// photos (white-bg shoots). Year 2008 keeps the original Modern Chain
-// webp (the demo hero — matches PLP tile #2).
+// 24 Chanel bags — 15 significant (with editorial slides + stories) and
+// 9 fill-in for years that would otherwise have gaps in the timeline.
+// All images are real Vestiaire product photos (white-bg shoots).
+// Year 2008 keeps the original Modern Chain webp (the demo hero — also
+// PLP tile #2 in v2).
 const BAGS = [
-  { year: 1955, img: 'assets/bags/1955_255.jpg',          name: '2.55 · Lambskin',           price: '€7,800' },
-  { year: 1983, img: 'assets/bags/1983_classic-flap.jpg', name: 'Timeless Classic · Caviar', price: '€5,400' },
-  { year: 1992, img: 'assets/bags/1992_vanity-case.jpg',  name: 'Vanity Case · Lambskin',    price: '€4,200' },
-  { year: 1994, img: 'assets/bags/1994_supermodel.jpg',   name: 'Supermodel · Calfskin',     price: '€3,650' },
-  { year: 1997, img: 'assets/bags/1997_woc.jpg',          name: 'Wallet on Chain · Caviar',  price: '€2,400' },
-  { year: 2005, img: 'assets/bags/2005_reissue-255.jpg',  name: 'Reissue 2.55 · Calfskin',   price: '€6,200' },
-  { year: 2008, img: 'assets/bags/2008.webp',             name: 'Modern Chain · Caviar',     price: '€3,100' },
-  { year: 2011, img: 'assets/bags/2011_boy.jpg',          name: 'Boy · Denim Patchwork',     price: '€3,800' },
-  { year: 2014, img: 'assets/bags/2014_graffiti.jpg',     name: 'Graffiti · Canvas',         price: '€4,400' },
-  { year: 2017, img: 'assets/bags/2017_gabrielle.jpg',    name: 'Gabrielle · Lambskin',      price: '€3,950' },
-  { year: 2018, img: 'assets/bags/2018_31.jpg',           name: '31 · Lambskin',             price: '€5,800' },
-  { year: 2019, img: 'assets/bags/2019_19.jpg',           name: 'Chanel 19 · Goatskin',      price: '€5,400' },
-  { year: 2022, img: 'assets/bags/2022_22.jpg',           name: 'Chanel 22 · Calfskin',      price: '€5,200' },
-  { year: 2023, img: 'assets/bags/2023_kelly.jpg',        name: 'Kelly · Caviar',            price: '€6,800' },
-  { year: 2025, img: 'assets/bags/2025_25.jpg',           name: 'Chanel 25 · Denim',         price: '€5,900' },
+  { year: 1955, img: 'assets/bags/1955_255.jpg',          name: '2.55 · Lambskin',                  price: '€7,800' },
+  { year: 1983, img: 'assets/bags/1983_classic-flap.jpg', name: 'Timeless Classic · Caviar',        price: '€5,400' },
+  { year: 1992, img: 'assets/bags/1992_vanity-case.jpg',  name: 'Vanity Case · Lambskin',           price: '€4,200' },
+  { year: 1994, img: 'assets/bags/1994_supermodel.jpg',   name: 'Supermodel · Calfskin',            price: '€3,650' },
+  { year: 1995, img: 'assets/bags/1995_diana.jpg',        name: 'Diana · Lambskin',                 price: '€2,950' },
+  { year: 1997, img: 'assets/bags/1997_woc.jpg',          name: 'Wallet on Chain · Caviar',         price: '€2,400' },
+  { year: 2004, img: 'assets/bags/2004_cambon.jpg',       name: 'Cambon · Lambskin',                price: '€2,800' },
+  { year: 2005, img: 'assets/bags/2005_reissue-255.jpg',  name: 'Reissue 2.55 · Calfskin',          price: '€6,200' },
+  { year: 2006, img: 'assets/bags/2006_paris-biarritz.jpg', name: 'Paris-Biarritz · Canvas',        price: '€2,200' },
+  { year: 2008, img: 'assets/bags/2008.webp',             name: 'Modern Chain · Caviar',            price: '€3,100' },
+  { year: 2011, img: 'assets/bags/2011_boy.jpg',          name: 'Boy · Denim Patchwork',            price: '€3,800' },
+  { year: 2012, img: 'assets/bags/2012_perfect-edge.jpg', name: 'Perfect Edge · Lambskin',          price: '€3,400' },
+  { year: 2013, img: 'assets/bags/2013_hula-hoop.jpg',    name: 'Hula Hoop · Calfskin',             price: '€3,200' },
+  { year: 2014, img: 'assets/bags/2014_graffiti.jpg',     name: 'Graffiti · Canvas',                price: '€4,400' },
+  { year: 2015, img: 'assets/bags/2015_girl.jpg',         name: 'Girl · Lambskin',                  price: '€2,900' },
+  { year: 2016, img: 'assets/bags/2016_urban-spirit.jpg', name: 'Urban Spirit Backpack · Denim',    price: '€3,500' },
+  { year: 2017, img: 'assets/bags/2017_gabrielle.jpg',    name: 'Gabrielle · Lambskin',             price: '€3,950' },
+  { year: 2018, img: 'assets/bags/2018_31.jpg',           name: '31 · Lambskin',                    price: '€5,800' },
+  { year: 2019, img: 'assets/bags/2019_19.jpg',           name: 'Chanel 19 · Goatskin',             price: '€5,400' },
+  { year: 2020, img: 'assets/bags/2020_diamond.jpg',      name: 'Heart Mini · Metallic',            price: '€2,600' },
+  { year: 2022, img: 'assets/bags/2022_22.jpg',           name: 'Chanel 22 · Calfskin',             price: '€5,200' },
+  { year: 2023, img: 'assets/bags/2023_kelly.jpg',        name: 'Kelly · Caviar',                   price: '€6,800' },
+  { year: 2024, img: 'assets/bags/2024_star.jpg',         name: 'Walk of Fame Star · Patent',       price: '€3,100' },
+  { year: 2025, img: 'assets/bags/2025_25.jpg',           name: 'Chanel 25 · Denim',                price: '€5,900' },
 ];
 
 const HERO_YEAR = 2008;
