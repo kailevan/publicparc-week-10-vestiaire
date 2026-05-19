@@ -383,6 +383,7 @@ body[data-slide-type="story"] #morphClone {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 0 24px;
   height: 0;
   opacity: 0;
@@ -393,9 +394,34 @@ body[data-slide-type="story"] #morphClone {
     opacity 300ms var(--easing) 280ms;
 }
 
-/* PDP price + product name typography mirrors the PLP card styling
-   (.card__price 14px/700, .card__name 14px/400) so the year-mode PDP
-   reads as a real Vestiaire product page. */
+/* Product name + price stacked flush-left, vertically centered with
+   the Add to Bag button. Reads like a real Vestiaire product row. */
+.buybar__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;            /* lets long names ellipsis instead of pushing button */
+  flex: 1 1 auto;
+}
+
+.buybar__name {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+  color: #333;
+  /* Single-line, ellipsis if too long */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* PDP price typography mirrors the PLP card styling
+   (.card__price 14px/700) so the year-mode PDP reads as a real Vestiaire
+   product page. */
 .buybar__price {
   font-family: var(--sans);
   font-size: 14px;
@@ -414,9 +440,10 @@ body[data-slide-type="story"] #morphClone {
   background: var(--fg);
   color: var(--bg);
   border: none;
-  border-radius: 4px;
+  border-radius: 2px;
   padding: 12px 22px;
   cursor: pointer;
+  flex-shrink: 0;
   transition: opacity 180ms ease;
 }
 
@@ -431,10 +458,10 @@ body[data-slide-type="story"] #morphClone {
   pointer-events: none;
 }
 
-/* Bag name stays visible in PDP — Vestiaire product pages show product
-   name + price together. */
+/* In PDP, the standalone .bagname is hidden — the bag name now sits
+   inside the buy bar (stacked above the price, flush left). */
 .app[data-mode="pdp"] .bagname {
-  opacity: 1;
+  opacity: 0;
 }
 
 .app[data-mode="pdp"] .bag {

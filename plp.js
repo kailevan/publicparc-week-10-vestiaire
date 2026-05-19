@@ -148,6 +148,8 @@ function morphTileToPrototype(tile) {
   const bagLayer = window.protoApi.getBagEl();
   const bagnameEl = document.querySelector('.bagname');
   if (bagnameEl) bagnameEl.textContent = bagName;
+  const buyBarName = document.querySelector('.buybar__name');
+  if (buyBarName) buyBarName.textContent = bagName;
 
   // Measure the bag's eventual screen rect (target)
   const targetRect = bagLayer.getBoundingClientRect();

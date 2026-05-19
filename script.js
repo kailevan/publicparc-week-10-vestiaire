@@ -168,6 +168,7 @@ const PX_PER_SLIDE = 80;   // PDP tick spacing
 const app        = document.querySelector('.app');
 const yearEl     = document.querySelector('.year');
 const bagNameEl  = document.querySelector('.bagname');
+const buyBarName = document.querySelector('.buybar__name');
 const strip      = document.getElementById('strip');
 const stripBrowse = document.getElementById('stripBrowse');
 const stripPdp    = document.getElementById('stripPdp');
@@ -410,6 +411,7 @@ function syncFromTx() {
     const bag = nearestBag(yi);
     showBag(bag);
     bagNameEl.textContent = bag.name;
+    if (buyBarName) buyBarName.textContent = bag.name;
     buyPrice.textContent = bag.price;
   } else {
     if (!lockedBag) return;
@@ -566,6 +568,7 @@ function enterPDP() {
   yearEl.textContent = lockedBag.year;
   buyPrice.textContent = lockedBag.price;
   bagNameEl.textContent = lockedBag.name;
+  if (buyBarName) buyBarName.textContent = lockedBag.name;
 
   // slide 0 = product hero, which is the same bag image, so no jarring image swap
   showEditorial(lockedBag.year, 0);
