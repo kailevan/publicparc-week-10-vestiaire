@@ -407,14 +407,14 @@ body[data-slide-type="story"] #morphClone {
 
 .buybar__btn {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 0.01em;
   text-transform: none;
   font-weight: 700;
   background: var(--fg);
   color: var(--bg);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 12px 22px;
   cursor: pointer;
   transition: opacity 180ms ease;
