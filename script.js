@@ -402,7 +402,11 @@ function buildBrowseStrip() {
   stripBrowse.innerHTML = '';
   for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
     const t = document.createElement('div');
-    const isMajor = y % 10 === 0 || y === YEAR_MIN || y === YEAR_MAX;
+    // Only even decades (1960, 1970 … 2020) get major ticks with labels.
+    // 1955 and 2026 are still scrubable (they're at the strip edges) but
+    // don't get their own labels — that visually-awkward 5-year gap is
+    // gone. The strip's edge fades imply the start/end boundaries.
+    const isMajor = y % 10 === 0;
     t.className = 'tick' + (isMajor ? ' tick--major' : '');
     t.style.left = `${(y - YEAR_MIN) * PX_PER_YEAR}px`;
     if (isMajor) {
