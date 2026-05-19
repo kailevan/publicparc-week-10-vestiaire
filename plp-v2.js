@@ -277,7 +277,12 @@ function morphPrototypeToPlp() {
     morphClone.style.height = `${endRect.height}px`;
   }, T_UI_FADE);
 
-  // Phase 3: clone is back at the tile rect → reveal PLP, fade clone out.
+  // Phase 3 — small SETTLE buffer (150ms) after the shrink so the bag
+  // visually "lands" in its tile position before the PLP comes back.
+  // Without this, the PLP fade-in starts immediately and reads as a
+  // flash through the still-shrinking bag.
+  const T_SETTLE = 150;
+
   setTimeout(() => {
     document.body.dataset.state = 'plp';
     unlockBodyScroll();
@@ -285,16 +290,17 @@ function morphPrototypeToPlp() {
     source.classList.remove('chip--is-source');
     source.classList.remove('hot-filter--is-source');
 
-    // Restore browse UI inline styles so they're clean for next entry.
     browseUiEls.forEach(el => {
       if (!el) return;
       el.style.transition = '';
       el.style.opacity = '';
     });
 
-    morphClone.style.transition = 'opacity 200ms ease';
+    // Clone fades out over 350ms — slow enough to crossfade smoothly
+    // with the PLP fade-in (500ms via .plp-view's default transition).
+    morphClone.style.transition = 'opacity 350ms ease';
     morphClone.style.opacity = '0';
-  }, T_UI_FADE + T_EXPAND);
+  }, T_UI_FADE + T_EXPAND + T_SETTLE);
 
   setTimeout(() => {
     morphClone.classList.remove('is-active');
@@ -303,7 +309,7 @@ function morphPrototypeToPlp() {
     morphClone.style.background = '';
     morphClone.style.borderRadius = '';
     sourceTile = null;
-  }, T_UI_FADE + T_EXPAND + 250);
+  }, T_UI_FADE + T_EXPAND + T_SETTLE + 400);
 }
 
 // Keep clone aligned with the .bag's screen rect on viewport changes
