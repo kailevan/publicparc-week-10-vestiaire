@@ -6,22 +6,13 @@
      prototype, with the selected bag's year as the landing year.
 --------------------------------------------------------------- */
 
-/* PLP grid — derived from window.BAGS. v2 uses a special ordering:
-   tile #1 (top-left)  = 1955 (the 2.55, oldest)
-   tile #2 (top-right) = 2026 (Chanel 26, newest / Blazy's upcoming)
-   tile #3+            = 1956 onwards chronologically
-   So "the first and the latest, then everything in between." The
-   View timeline CTA morphs from tile #2 (2026). */
-const _bagsRaw = (window.BAGS || []).slice();
-const _2026Idx = _bagsRaw.findIndex(b => b.year === 2026);
-let _bagsOrdered;
-if (_2026Idx >= 0) {
-  const _2026 = _bagsRaw.splice(_2026Idx, 1)[0];
-  _bagsRaw.splice(1, 0, _2026);
-  _bagsOrdered = _bagsRaw;
-} else {
-  _bagsOrdered = _bagsRaw;
-}
+/* PLP grid — derived from window.BAGS, REVERSE CHRONOLOGICAL.
+   Newest first (2026 Chanel 26 at the top), oldest last (1955 2.55
+   at the bottom). Mirrors Vestiaire's default 'Newest' sort: scroll
+   DOWN = move back in time. The View timeline CTA picks whichever
+   tile is closest to the viewport center as its morph source, so
+   no tile has special status anymore. */
+const _bagsOrdered = (window.BAGS || []).slice().reverse();
 
 const PRODUCTS = _bagsOrdered.map((bag, i) => {
   const id = String(i + 1).padStart(2, '0');
@@ -418,6 +409,32 @@ if (appEl) {
 // v2: tiles in the grid DO NOT trigger the morph. Only the "Year"
 // hot-filter pill does. (Hearts still toggle as in v1.)
 
+// ---------- Most-visible-tile helper ----------------------------
+// Returns the tile in the PLP grid whose vertical center is closest to
+// the viewport's vertical center. Used by morphFilterToPrototype so the
+// View timeline CTA expands FROM whatever bag the user is currently
+// looking at, no matter where they've scrolled. Falls back to the first
+// tile if (somehow) nothing is even partially visible.
+function findMostVisibleTile() {
+  const tiles = document.querySelectorAll('.plp__grid .card');
+  if (!tiles.length) return null;
+  const viewportH = window.innerHeight;
+  const viewportCenter = viewportH / 2;
+  let best = null;
+  let bestDist = Infinity;
+  for (const tile of tiles) {
+    const rect = tile.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > viewportH) continue;   // off-screen
+    const tileCenter = rect.top + rect.height / 2;
+    const dist = Math.abs(tileCenter - viewportCenter);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = tile;
+    }
+  }
+  return best || tiles[0];
+}
+
 // ---------- Morph: hot-filter "Year" pill → prototype bag --------
 // Same 3-phase choreography as morphTileToPrototype, but the source
 // is the wide-flat filter pill at the top of the page. The pill itself
@@ -429,28 +446,14 @@ if (appEl) {
 function morphFilterToPrototype(filterBtn) {
   if (!morphClone || !window.protoApi) return;
 
-  // v2 entry: "View timeline" is the click target. The visual morph
-  // source is the 2026 Chanel 26 bag, which sits at tile #2 (top-right)
-  // — the most prominent above-the-fold slot. PLP is already showing it
-  // when the user clicks the CTA (it's at the top), so no scroll needed
-  // for entry.
-  const sourceTileEl = document.querySelector('.plp__grid .card[data-year="2026"]');
+  // v2 entry: "View timeline" picks the bag closest to the viewport
+  // CENTER as the morph source. So whatever bag the user is currently
+  // looking at lifts off the grid and expands into year-mode at THAT
+  // bag's year — no jarring scroll-back, no canonical entry year.
+  // The morph reads as "this bag I was just looking at became the
+  // experience."
+  const sourceTileEl = findMostVisibleTile();
   if (!sourceTileEl) return;
-  // The user may have scrolled the PLP before tapping the floating
-  // "View timeline" CTA (it only appears after ~300px of scroll). Scroll
-  // back to the 2026 tile so the morph starts from a visible position.
-  // Body is the scroll container (html is overflow:hidden), so write to
-  // document.body.scrollTop.
-  const _tileImg = sourceTileEl.querySelector('.card__img');
-  if (_tileImg) {
-    const r0 = _tileImg.getBoundingClientRect();
-    const currentScroll = document.body.scrollTop ||
-                          document.documentElement.scrollTop ||
-                          window.scrollY || 0;
-    const desiredScroll = currentScroll + r0.top - (window.innerHeight - r0.height) / 2;
-    document.body.scrollTop = Math.max(0, desiredScroll);
-    void document.body.offsetHeight;
-  }
   const tileImg = sourceTileEl.querySelector('.card__img');
   if (!tileImg) return;
 
