@@ -269,14 +269,19 @@ function morphPrototypeToPlp() {
   // Scroll the (still-hidden) PLP so the target tile is centered in
   // the viewport. .app (position:fixed) covers the whole screen during
   // browse mode so the scroll happens invisibly.
+  // <html> is overflow:hidden globally; <body> is the actual scroll
+  // container — so we write to document.body.scrollTop (not
+  // window.scrollTo) and read from document.body.scrollTop.
   if (wasCard) {
     document.body.style.overflow = 'auto';
-    document.documentElement.style.overflow = 'auto';
     void document.body.offsetHeight;
     const tileRect0 = sourceEl.getBoundingClientRect();
-    const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
-                          tileRect0.top - (window.innerHeight - tileRect0.height) / 2;
-    window.scrollTo(0, Math.max(0, desiredScroll));
+    const currentScroll = document.body.scrollTop ||
+                          document.documentElement.scrollTop || 0;
+    const desiredScroll = currentScroll +
+                          tileRect0.top -
+                          (window.innerHeight - tileRect0.height) / 2;
+    document.body.scrollTop = Math.max(0, desiredScroll);
     void document.body.offsetHeight;
   }
 

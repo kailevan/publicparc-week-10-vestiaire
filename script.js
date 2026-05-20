@@ -589,17 +589,36 @@ function enterPDP() {
 function exitPDP() {
   if (mode === 'browse') return;
   const restoreYear = lockedBag ? lockedBag.year : YEAR_MIN;
-  lockedBag = null;
-  mode = 'browse';
-  app.dataset.mode = 'browse';
 
-  hideStoryCard();
+  // Smooth image swap: if we're leaving from an editorial slide (not
+  // the product slide), the clone img is currently showing an editorial
+  // photo. Fade it out, swap to the product bag underneath, then fade
+  // back in — instead of the instant src swap that read as a jolt.
+  const cloneImg = document.querySelector('#morphClone img');
+  const onEditorialSlide = lockedBag && slideIdx > 0;
 
-  // The browse rail is still positioned where the user left it before tapping
-  // the bag (browseTx didn't change). But yearF might be different from
-  // restoreYear (user dragged to 1997 → entered PDP at 1996). Re-sync.
-  lastBagShown = null;
-  setYear(restoreYear);
+  const finishExit = () => {
+    lockedBag = null;
+    mode = 'browse';
+    app.dataset.mode = 'browse';
+    hideStoryCard();
+    lastBagShown = null;
+    setYear(restoreYear);
+    if (cloneImg) {
+      cloneImg.style.transition = 'opacity 240ms ease';
+      cloneImg.style.opacity = '1';
+    }
+  };
+
+  if (onEditorialSlide && cloneImg) {
+    cloneImg.style.transition = 'opacity 200ms ease';
+    cloneImg.style.opacity = '0';
+    setTimeout(finishExit, 200);
+  } else {
+    // Product slide (idx 0) — clone is already showing the product bag,
+    // no fade needed. Flip state immediately.
+    finishExit();
+  }
 }
 
 bagLayer.addEventListener('click', () => { if (mode === 'browse') enterPDP(); });

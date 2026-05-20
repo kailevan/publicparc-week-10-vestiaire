@@ -302,7 +302,11 @@ body[data-slide-type="story"] #morphClone {
 
 /* Indicator — slim serif "I" mark (thin vertical hairline with tiny
    horizontal serif feet at top and bottom). Reads as typography rather
-   than instrument chrome. */
+   than instrument chrome.
+
+   In PDP mode the line transforms into a small downward chevron sitting
+   above the tick row, so the editorial captions below the ticks have
+   full vertical clearance. */
 .strip__indicator {
   position: absolute;
   left: 50%;
@@ -313,6 +317,8 @@ body[data-slide-type="story"] #morphClone {
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 2;
+  transition: top 320ms var(--easing), bottom 320ms var(--easing),
+              width 320ms var(--easing), background 200ms var(--easing);
 }
 .strip__indicator::before,
 .strip__indicator::after {
@@ -323,9 +329,35 @@ body[data-slide-type="story"] #morphClone {
   height: 1px;
   background: var(--fg);
   transform: translateX(-50%);
+  transition: opacity 240ms var(--easing), transform 240ms var(--easing);
 }
 .strip__indicator::before { top: 0; }
 .strip__indicator::after  { bottom: 0; }
+
+/* PDP mode — replace the I-line with a small downward chevron above the
+   ticks. We hide the vertical line + bottom serif, and use the top
+   pseudo-element rotated 45° as the chevron tip. */
+.app[data-mode="pdp"] .strip__indicator {
+  top: 0;
+  bottom: auto;
+  height: 6px;
+  width: 0;                /* line collapses */
+  background: transparent;
+}
+.app[data-mode="pdp"] .strip__indicator::before {
+  /* Top serif foot rotates into a small chevron pointing down */
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  border-right: 1.4px solid var(--fg);
+  border-bottom: 1.4px solid var(--fg);
+  top: -2px;
+  transform: translateX(-50%) rotate(45deg);
+}
+.app[data-mode="pdp"] .strip__indicator::after {
+  /* Bottom serif foot disappears in PDP */
+  opacity: 0;
+}
 
 /* Soft fade at the strip edges so ticks don't snap visually
    into existence; gives the picker a "wheel" depth. */
