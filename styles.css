@@ -558,11 +558,17 @@ body.plp-body {
 }
 
 /* Logo bar ------------------------------------------------------- */
+/* Sticky at the top — the Vestiaire logo persists as the user scrolls
+   the PLP. White background so it sits cleanly over the grid below. */
 .plp__logo-bar {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 18px 24px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #fff;
 }
 .plp__logo {
   height: 30px;                  /* matches the year-dial prototype */
@@ -571,19 +577,8 @@ body.plp-body {
 }
 
 /* Title block ---------------------------------------------------- */
-/* v2: "View timeline →" CTA sits flush-right next to the H1. v1 has
-   no such button and the .plp__title-text wrapper is absent — the H1
-   still works because it's a direct child either way. */
 .plp__title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
   padding: 16px 20px 8px;
-}
-.plp__title-text {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 .plp__h1 {
   font-family: var(--serif);
@@ -602,30 +597,57 @@ body.plp-body {
   margin: 4px 0 0;
 }
 
-/* View timeline button (v2 only) — replaces the previous "Year" pill
-   that lived in the filter row. Year-mode is its own EXPERIENCE, not
-   a filter, so the CTA is hoisted out of the filter row and into the
-   title area as a black pill on the right. */
-.plp__view-timeline {
+/* Floating "View timeline" CTA (v2 only) ------------------------
+   Sits at the bottom of the viewport above the home/favorites nav.
+   Hidden by default (translated below + opacity 0). When the user
+   scrolls past the title (~300px), JS adds .is-visible and the
+   button slides up smoothly. Hidden again during the morph (so it
+   doesn't sit on top of the year-mode app). */
+.plp__view-timeline-fab {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;                /* nav is ~64px tall; small gap above */
+  transform: translate(-50%, 28px);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 12px 22px;
   background: var(--fg);
   color: var(--bg);
   border: none;
   border-radius: 2px;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 6px;
-  transition: opacity 180ms ease;
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  transition:
+    opacity 280ms var(--easing),
+    transform 320ms var(--easing);
 }
-.plp__view-timeline:active { opacity: 0.7; }
+.plp__view-timeline-fab.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+.plp__view-timeline-fab:active { opacity: 0.85; }
+
+/* Hide the FAB outside of the PLP state (during morph + while in
+   year-mode). It's position:fixed so without this it'd float on top
+   of the prototype. */
+body[data-state="morphing"] .plp__view-timeline-fab,
+body[data-state="browse"]   .plp__view-timeline-fab,
+body[data-state="pdp"]      .plp__view-timeline-fab {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 28px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
 
 /* Chips (guided search) ----------------------------------------- */
 .plp__chips,

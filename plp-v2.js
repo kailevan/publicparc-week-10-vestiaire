@@ -436,7 +436,17 @@ function morphFilterToPrototype(filterBtn) {
   // for entry.
   const sourceTileEl = document.querySelector('.plp__grid .card[data-year="2026"]');
   if (!sourceTileEl) return;
-  // 2026 tile is at top of PLP, no scroll needed for entry.
+  // The user may have scrolled the PLP before tapping the floating
+  // "View timeline" CTA (it only appears after ~300px of scroll). Scroll
+  // back to the 2026 tile so the morph starts from a visible position.
+  const _tileImg = sourceTileEl.querySelector('.card__img');
+  if (_tileImg) {
+    const r0 = _tileImg.getBoundingClientRect();
+    const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
+                          r0.top - (window.innerHeight - r0.height) / 2;
+    window.scrollTo(0, Math.max(0, desiredScroll));
+    void document.body.offsetHeight;
+  }
   const tileImg = sourceTileEl.querySelector('.card__img');
   if (!tileImg) return;
 
@@ -503,10 +513,26 @@ function morphFilterToPrototype(filterBtn) {
   }, T_FADE_PLP + T_EXPAND + T_BUFFER);
 }
 
-// Wire the "View timeline" CTA (sits next to the Chanel Bag title)
+// Wire the floating "View timeline" CTA. It's hidden by default and
+// slides up from below once the user has scrolled past the title block.
 const viewTimelineBtn = document.getElementById('viewTimelineBtn');
 if (viewTimelineBtn) {
   viewTimelineBtn.addEventListener('click', () => morphFilterToPrototype(viewTimelineBtn));
+
+  const SCROLL_TRIGGER = 300;
+  let _ticking = false;
+  function onScroll() {
+    if (_ticking) return;
+    _ticking = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      viewTimelineBtn.classList.toggle('is-visible', y > SCROLL_TRIGGER);
+      _ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  // In case the page loads already scrolled (e.g., refresh mid-scroll)
+  onScroll();
 }
 
 // ---------- Back-to-PLP from prototype browse mode ---------------
