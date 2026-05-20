@@ -439,12 +439,16 @@ function morphFilterToPrototype(filterBtn) {
   // The user may have scrolled the PLP before tapping the floating
   // "View timeline" CTA (it only appears after ~300px of scroll). Scroll
   // back to the 2026 tile so the morph starts from a visible position.
+  // Body is the scroll container (html is overflow:hidden), so write to
+  // document.body.scrollTop.
   const _tileImg = sourceTileEl.querySelector('.card__img');
   if (_tileImg) {
     const r0 = _tileImg.getBoundingClientRect();
-    const desiredScroll = (window.scrollY || document.documentElement.scrollTop) +
-                          r0.top - (window.innerHeight - r0.height) / 2;
-    window.scrollTo(0, Math.max(0, desiredScroll));
+    const currentScroll = document.body.scrollTop ||
+                          document.documentElement.scrollTop ||
+                          window.scrollY || 0;
+    const desiredScroll = currentScroll + r0.top - (window.innerHeight - r0.height) / 2;
+    document.body.scrollTop = Math.max(0, desiredScroll);
     void document.body.offsetHeight;
   }
   const tileImg = sourceTileEl.querySelector('.card__img');
@@ -515,6 +519,11 @@ function morphFilterToPrototype(filterBtn) {
 
 // Wire the floating "View timeline" CTA. It's hidden by default and
 // slides up from below once the user has scrolled past the title block.
+//
+// Note: <html> is overflow:hidden and <body> is the scroll container
+// (set by the SPA state machine — body[data-state="plp"] gets
+// overflow:auto). So window.scrollY is always 0; we read scroll from
+// document.body.scrollTop and listen to scroll events on document.body.
 const viewTimelineBtn = document.getElementById('viewTimelineBtn');
 if (viewTimelineBtn) {
   viewTimelineBtn.addEventListener('click', () => morphFilterToPrototype(viewTimelineBtn));
@@ -525,13 +534,18 @@ if (viewTimelineBtn) {
     if (_ticking) return;
     _ticking = true;
     requestAnimationFrame(() => {
-      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      const y = document.body.scrollTop ||
+                document.documentElement.scrollTop ||
+                window.scrollY || 0;
       viewTimelineBtn.classList.toggle('is-visible', y > SCROLL_TRIGGER);
       _ticking = false;
     });
   }
+  // Listen on both body and window — body is the actual scroll container
+  // here, but listening on window too is a belt-and-suspenders in case
+  // the scroll context changes (e.g., on returning from year-mode).
+  document.body.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('scroll', onScroll, { passive: true });
-  // In case the page loads already scrolled (e.g., refresh mid-scroll)
   onScroll();
 }
 
