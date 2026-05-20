@@ -300,13 +300,9 @@ body[data-slide-type="story"] #morphClone {
 .app[data-mode="browse"] .strip__rail--browse { opacity: 1; }
 .app[data-mode="pdp"]    .strip__rail--pdp    { opacity: 1; }
 
-/* Indicator — slim serif "I" mark (thin vertical hairline with tiny
-   horizontal serif feet at top and bottom). Reads as typography rather
-   than instrument chrome.
-
-   In PDP mode the line transforms into a small downward chevron sitting
-   above the tick row, so the editorial captions below the ticks have
-   full vertical clearance. */
+/* Indicator — slim vertical hairline at center, no serif feet.
+   In PDP mode it transforms into a small downward chevron sitting above
+   the tick row, so editorial captions have full clearance below. */
 .strip__indicator {
   position: absolute;
   left: 50%;
@@ -320,23 +316,9 @@ body[data-slide-type="story"] #morphClone {
   transition: top 320ms var(--easing), bottom 320ms var(--easing),
               width 320ms var(--easing), background 200ms var(--easing);
 }
-.strip__indicator::before,
-.strip__indicator::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  width: 7px;
-  height: 1px;
-  background: var(--fg);
-  transform: translateX(-50%);
-  transition: opacity 240ms var(--easing), transform 240ms var(--easing);
-}
-.strip__indicator::before { top: 0; }
-.strip__indicator::after  { bottom: 0; }
 
-/* PDP mode — replace the I-line with a small downward chevron above the
-   ticks. We hide the vertical line + bottom serif, and use the top
-   pseudo-element rotated 45° as the chevron tip. */
+/* PDP mode — replace the line with a small downward chevron above
+   the ticks. */
 .app[data-mode="pdp"] .strip__indicator {
   top: 0;
   bottom: auto;
@@ -345,7 +327,9 @@ body[data-slide-type="story"] #morphClone {
   background: transparent;
 }
 .app[data-mode="pdp"] .strip__indicator::before {
-  /* Top serif foot rotates into a small chevron pointing down */
+  content: '';
+  position: absolute;
+  left: 50%;
   width: 8px;
   height: 8px;
   background: transparent;
@@ -353,10 +337,6 @@ body[data-slide-type="story"] #morphClone {
   border-bottom: 1.4px solid var(--fg);
   top: -2px;
   transform: translateX(-50%) rotate(45deg);
-}
-.app[data-mode="pdp"] .strip__indicator::after {
-  /* Bottom serif foot disappears in PDP */
-  opacity: 0;
 }
 
 /* Soft fade at the strip edges so ticks don't snap visually
@@ -374,15 +354,15 @@ body[data-slide-type="story"] #morphClone {
 /* Each tick is positioned absolutely along the rail. JS computes
    the rail width and the per-tick left offset.
 
-   Per-year minor ticks are kept in DOM (for hit-testing during scrub)
-   but rendered transparent — the magnetic snap still works, the strip
-   just doesn't look like a Rolex bezel. */
+   Per-year minor ticks are soft hairlines — visible enough to give
+   scroll feedback between decade labels, faint enough that the strip
+   doesn't read as instrument chrome. */
 .tick {
   position: absolute;
   top: 0;
   width: 1px;
   height: 8px;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.1);
   transform: translateX(-50%);
 }
 /* Decade markers — soft hairline, not the bold black it was before */
