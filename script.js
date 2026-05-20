@@ -412,6 +412,17 @@ function buildPdpStrip(year) {
   stripPdp.style.width = `${(slides.length - 1) * PX_PER_SLIDE + 2}px`;
 }
 
+/* Update which PDP tick has the .is-active class — the active caption
+   becomes black/full-opacity, others dim to 0.3. Replaces the previous
+   chevron indicator: the typography itself is the marker. */
+function updatePdpActiveTick() {
+  if (!stripPdp) return;
+  const ticks = stripPdp.querySelectorAll('.tick');
+  ticks.forEach((t, i) => {
+    t.classList.toggle('is-active', i === slideIdx);
+  });
+}
+
 // ---------- Sync state from rail position --------------------------
 function syncFromTx() {
   const tx = getActiveTx();
@@ -431,6 +442,7 @@ function syncFromTx() {
     const idxF = slideForTx(tx, slides.length);
     slideIdx = Math.round(idxF);
     showEditorial(lockedBag.year, slideIdx);
+    updatePdpActiveTick();
   }
 }
 
@@ -572,6 +584,7 @@ function enterPDP() {
   lastEditorialShown = null;
   pdpTx = txForSlide(0);
   stripPdp.style.transform = `translateX(${pdpTx}px)`;
+  updatePdpActiveTick();
 
   // Now flip mode — CSS transitions everything in sync
   mode = 'pdp';

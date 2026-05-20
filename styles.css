@@ -325,26 +325,13 @@ body[data-slide-type="story"] #morphClone {
               width 320ms var(--easing), background 200ms var(--easing);
 }
 
-/* PDP mode — replace the line with a small downward chevron above
-   the ticks. */
+/* PDP mode — no marker line/chevron. The active caption (currently
+   centered) is the marker: it gets opacity 1 + black, all other
+   captions are dimmed to opacity 0.3. */
 .app[data-mode="pdp"] .strip__indicator {
-  top: 0;
-  bottom: auto;
-  height: 6px;
-  width: 0;                /* line collapses */
+  opacity: 0;
+  width: 0;
   background: transparent;
-}
-.app[data-mode="pdp"] .strip__indicator::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  background: transparent;
-  border-right: 1.4px solid var(--fg);
-  border-bottom: 1.4px solid var(--fg);
-  top: -2px;
-  transform: translateX(-50%) rotate(45deg);
 }
 
 /* Soft fade at the strip edges so ticks don't snap visually
@@ -411,15 +398,22 @@ body[data-slide-type="story"] #morphClone {
   font-weight: 400;
   letter-spacing: 0.01em;
   text-transform: none;
-  color: var(--fg-soft);
+  color: #000;
+  opacity: 0.3;
   top: 14px;
-  /* Allow wrap to 2 lines for long captions like "Inez & Vinoodh campaign"
-     or "Margot, Michel Gondry". max-width matches PX_PER_SLIDE (80) minus
-     a few px of breathing so adjacent labels never touch. */
+  /* Allow wrap to 2 lines for long captions. max-width matches
+     PX_PER_SLIDE (80) minus a few px so adjacent labels never touch. */
   white-space: normal;
   max-width: 76px;
   text-align: center;
   line-height: 1.2;
+  /* Smooth dim-up / dim-down as the strip scrubs */
+  transition: opacity 240ms var(--easing);
+}
+/* Active slide's caption — the typography becomes the marker. */
+.tick--editorial.is-active .tick__label {
+  opacity: 1;
+  font-weight: 500;
 }
 
 /* Back arrow (PDP only) ----------------------------------------- */
