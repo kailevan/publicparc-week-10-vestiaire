@@ -607,7 +607,7 @@ body.plp-body {
   position: fixed;
   left: 50%;
   bottom: 88px;                /* nav is ~64px tall; small gap above */
-  transform: translate(-50%, 28px);
+  transform: translate(-50%, 48px);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -626,9 +626,11 @@ body.plp-body {
   opacity: 0;
   pointer-events: none;
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  /* Smooth ease-out-quint with longer durations — premium deceleration,
+     reads as a soft slide rather than a snap. */
   transition:
-    opacity 280ms var(--easing),
-    transform 320ms var(--easing);
+    opacity 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 680ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .plp__view-timeline-fab.is-visible {
   opacity: 1;
@@ -645,8 +647,8 @@ body[data-state="browse"]   .plp__view-timeline-fab,
 body[data-state="pdp"]      .plp__view-timeline-fab {
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, 28px);
-  transition: opacity 200ms ease, transform 200ms ease;
+  transform: translate(-50%, 48px);
+  transition: opacity 300ms ease, transform 300ms ease;
 }
 
 /* Chips (guided search) ----------------------------------------- */
