@@ -240,12 +240,12 @@ function morphPrototypeToPlp() {
   }
 
   // Phase 1: hide browse UI immediately. PLP stays hidden (CSS).
+  // .bagname is held back so it fades CONCURRENTLY with the bag shrink.
   const T_UI_FADE = 200;
   const browseUiEls = [
     document.querySelector('.app .year'),
     document.querySelector('.app .strip'),
     document.querySelector('.app .buybar'),
-    document.querySelector('.app .bagname'),
     document.querySelector('.app .back'),
     document.querySelector('.app .hdr__context'),
     document.getElementById('plpBack'),
@@ -256,6 +256,11 @@ function morphPrototypeToPlp() {
     el.style.transition = `opacity ${T_UI_FADE}ms ease`;
     el.style.opacity = '0';
   });
+  const bagnameEl = document.querySelector('.app .bagname');
+  if (bagnameEl) {
+    bagnameEl.style.transition = `opacity 480ms ease ${T_UI_FADE}ms`;
+    bagnameEl.style.opacity = '0';
+  }
 
   // Scroll the (still-hidden) PLP so the target tile is centered in
   // the viewport — happens invisibly because .app (position:fixed)
@@ -306,6 +311,10 @@ function morphPrototypeToPlp() {
       el.style.transition = '';
       el.style.opacity = '';
     });
+    if (bagnameEl) {
+      bagnameEl.style.transition = '';
+      bagnameEl.style.opacity = '';
+    }
 
     // Clone fades out over 350ms, crossfading with the PLP's 500ms
     // fade-in transition. Smooth, no flash.

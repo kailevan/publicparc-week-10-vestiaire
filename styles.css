@@ -661,8 +661,8 @@ body.plp-body {
   /* Buttery deceleration — long durations + deep ease-out so the slide
      comes to rest like a curtain settling, no perceptible snap. */
   transition:
-    opacity 950ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 1300ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .plp__view-timeline-fab.is-visible {
   opacity: 1;
