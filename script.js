@@ -194,6 +194,9 @@ let pdpTx = 0;                // pdp-rail translateX
 let yearF = YEAR_MIN;
 let slideIdx = 0;
 let lockedBag = null;
+const RECORDING_ASSIST = new URLSearchParams(window.location.search).has('recording');
+let recordingBrowseStep = 0;
+let recordingPdpStep = 0;
 
 // Convenience: read/write the active rail's transform.
 function getActiveTx() { return mode === 'browse' ? browseTx : pdpTx; }
@@ -234,9 +237,10 @@ function getStablePdpCardRect() {
 function alignStoryCardToBag() {
   if (!storyCard || document.body.dataset.slideType !== 'story') return;
   const rect = getStablePdpCardRect();
-  storyCard.style.setProperty('--story-card-left', `${rect.left}px`);
+  const extraWidth = 28;
+  storyCard.style.setProperty('--story-card-left', `${rect.left - extraWidth / 2}px`);
   storyCard.style.setProperty('--story-card-top', `${rect.top}px`);
-  storyCard.style.setProperty('--story-card-width', `${rect.width}px`);
+  storyCard.style.setProperty('--story-card-width', `${rect.width + extraWidth}px`);
   storyCard.style.setProperty('--story-card-height', `${rect.height}px`);
 }
 
@@ -246,10 +250,55 @@ let dragStartTx = 0;
 let velocitySamples = [];     // {x, t} for momentum velocity
 let momentumRAF = null;
 let snapRAF = null;
+let lastTickStep = null;
+let scrubAudioActive = false;
+let suppressTicks = false;
+let tickAudioCtx = null;
+let tickAudioBuffer = null;
+let tickAudioInitStarted = false;
+const TICK_VOLUME = 0.5;
 
 // ---------- Helpers -------------------------------------------------
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function unlockTickAudio() {
+  if (tickAudioInitStarted) {
+    if (tickAudioCtx && tickAudioCtx.state === 'suspended') tickAudioCtx.resume().catch(() => {});
+    return;
+  }
+  tickAudioInitStarted = true;
+  try {
+    tickAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (tickAudioCtx.state === 'suspended') tickAudioCtx.resume().catch(() => {});
+    try {
+      const silent = tickAudioCtx.createBuffer(1, 1, 22050);
+      const source = tickAudioCtx.createBufferSource();
+      source.buffer = silent;
+      source.connect(tickAudioCtx.destination);
+      source.start(0);
+    } catch (_) {}
+    fetch('tock.wav')
+      .then(response => response.arrayBuffer())
+      .then(buffer => tickAudioCtx.decodeAudioData(buffer))
+      .then(decoded => { tickAudioBuffer = decoded; })
+      .catch(() => {});
+  } catch (_) {}
+}
+
+function playTick(step, force = false) {
+  if (suppressTicks || !tickAudioCtx || !tickAudioBuffer) return;
+  if (!force && step === lastTickStep) return;
+  lastTickStep = step;
+  if (tickAudioCtx.state === 'suspended') tickAudioCtx.resume().catch(() => {});
+  const source = tickAudioCtx.createBufferSource();
+  source.buffer = tickAudioBuffer;
+  const gain = tickAudioCtx.createGain();
+  gain.gain.value = TICK_VOLUME;
+  source.connect(gain).connect(tickAudioCtx.destination);
+  source.start(0);
+}
 const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeOutQuint = t => 1 - Math.pow(1 - t, 5);
 
 function stripCenter() { return strip.clientWidth / 2; }
 
@@ -393,7 +442,13 @@ function showStoryCard(year) {
   card.innerHTML = '';
   const scroller = document.createElement('div');
   scroller.className = 'story-card__scroll';
-  scroller.textContent = text;
+  text.split(/\n\s*\n/).forEach(part => {
+    const paragraph = part.trim();
+    if (!paragraph) return;
+    const p = document.createElement('p');
+    p.textContent = paragraph;
+    scroller.appendChild(p);
+  });
   card.appendChild(scroller);
   scroller.scrollTop = 0;
   card.setAttribute('aria-hidden', 'false');
@@ -478,6 +533,8 @@ function syncFromTx() {
   if (mode === 'browse') {
     yearF = clamp(yearForTx(tx), YEAR_MIN, YEAR_MAX);
     const yi = Math.round(yearF);
+    const tickYear = Math.round((yearF - YEAR_MIN) / 5) * 5 + YEAR_MIN;
+    if (scrubAudioActive) playTick(`year:${tickYear}`);
     if (yearDigits) yearDigits.textContent = yi; else yearEl.textContent = yi;
     strip.setAttribute('aria-valuenow', String(yi));
     const bag = nearestBag(yi);
@@ -490,19 +547,23 @@ function syncFromTx() {
     const slides = getSlidesFor(lockedBag.year);
     const idxF = slideForTx(tx, slides.length);
     slideIdx = Math.round(idxF);
+    if (scrubAudioActive) playTick(`slide:${lockedBag.year}:${slideIdx}`);
     showEditorial(lockedBag.year, slideIdx);
     updatePdpActiveTick();
   }
 }
 
-function setYear(yf, animate = false) {
+function setYear(yf, animate = false, silent = false) {
   yearF = clamp(yf, YEAR_MIN, YEAR_MAX);
+  const prevSuppressTicks = suppressTicks;
+  if (silent) suppressTicks = true;
   if (animate) {
     animateTxTo(txForYear(yearF), 280);
   } else {
     setActiveTx(txForYear(yearF));
     syncFromTx();
   }
+  suppressTicks = prevSuppressTicks;
 }
 
 function setSlide(idx, animate = false) {
@@ -533,9 +594,70 @@ function animateTxTo(targetTx, duration) {
     setActiveTx(startTx + (targetTx - startTx) * easeOutCubic(t));
     syncFromTx();
     if (t < 1) snapRAF = requestAnimationFrame(frame);
-    else snapRAF = null;
+    else {
+      snapRAF = null;
+      if (!dragging && !momentumRAF) scrubAudioActive = false;
+    }
   }
   snapRAF = requestAnimationFrame(frame);
+}
+
+function stagedGlideToTx(targetTx, duration = 1500) {
+  cancelAnims();
+  scrubAudioActive = true;
+  const startTx = getActiveTx();
+  const startT = performance.now();
+  function frame(now) {
+    const t = Math.min(1, (now - startT) / duration);
+    setActiveTx(startTx + (targetTx - startTx) * easeOutQuint(t));
+    syncFromTx();
+    if (t < 1) {
+      snapRAF = requestAnimationFrame(frame);
+    } else {
+      snapRAF = null;
+      scrubAudioActive = false;
+    }
+  }
+  snapRAF = requestAnimationFrame(frame);
+}
+
+function stagedGlideToYear(year, duration = 1500) {
+  if (mode !== 'browse') return;
+  stagedGlideToTx(txForYear(clamp(year, YEAR_MIN, YEAR_MAX)), duration);
+}
+
+function stagedGlideToSlide(index, duration = 1100) {
+  if (mode !== 'pdp' || !lockedBag) return;
+  const slides = getSlidesFor(lockedBag.year);
+  stagedGlideToTx(txForSlide(clamp(index, 0, slides.length - 1)), duration);
+}
+
+function runRecordingAssistGlide() {
+  if (!RECORDING_ASSIST) return false;
+  if (mode === 'browse') {
+    const targets = [
+      { year: 1990, duration: 2200 },
+      { year: 1955, duration: 2750 },
+    ];
+    const target = targets[Math.min(recordingBrowseStep, targets.length - 1)];
+    recordingBrowseStep += 1;
+    stagedGlideToYear(target.year, target.duration);
+    return true;
+  }
+
+  if (mode === 'pdp' && lockedBag) {
+    const slides = getSlidesFor(lockedBag.year);
+    const targets = [
+      { index: Math.min(2, slides.length - 1), duration: 1650 },
+      { index: Math.max(0, slides.length - 1), duration: 2250 },
+    ];
+    const target = targets[Math.min(recordingPdpStep, targets.length - 1)];
+    recordingPdpStep += 1;
+    stagedGlideToSlide(target.index, target.duration);
+    return true;
+  }
+
+  return false;
 }
 
 function snapToNearest() {
@@ -553,6 +675,7 @@ function snapToNearest() {
 
 function startMomentum(vPxPerMs) {
   cancelAnims();
+  scrubAudioActive = true;
   let v = vPxPerMs;
   let last = performance.now();
   const friction = 0.94;
@@ -574,7 +697,9 @@ function startMomentum(vPxPerMs) {
 
 // ---------- Pointer drag -------------------------------------------
 function onPointerDown(e) {
+  unlockTickAudio();
   cancelAnims();
+  scrubAudioActive = true;
   dragging = true;
   dragStartX = e.clientX;
   dragStartTx = getActiveTx();
@@ -594,8 +719,10 @@ function onPointerMove(e) {
 
 function onPointerUp(e) {
   if (!dragging) return;
+  const dragDistance = e.clientX - dragStartX;
   dragging = false;
   try { strip.releasePointerCapture(e.pointerId); } catch(_) {}
+  if (Math.abs(dragDistance) > 8 && runRecordingAssistGlide()) return;
   // Compute velocity from recent samples
   if (velocitySamples.length >= 2) {
     const a = velocitySamples[0];
@@ -626,6 +753,7 @@ function enterPDP() {
   if (mode === 'pdp') return;
   const yi = Math.round(yearF);
   lockedBag = nearestBag(yi);
+  recordingPdpStep = 0;
 
   // Prepare the PDP rail BEFORE flipping mode so it's painted at slide 0
   buildPdpStrip(lockedBag.year);
@@ -686,10 +814,33 @@ function exitPDP() {
 
 bagLayer.addEventListener('click', () => { if (mode === 'browse') enterPDP(); });
 backBtn.addEventListener('click', exitPDP);
+document.addEventListener('pointerdown', unlockTickAudio, { once: true });
+document.addEventListener('keydown', unlockTickAudio, { once: true });
 
 // ---------- Keyboard ------------------------------------------------
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && mode === 'pdp') exitPDP();
+  if (e.key === '1' && mode === 'browse') {
+    e.preventDefault();
+    stagedGlideToYear(1990, 1450);
+    return;
+  }
+  if (e.key === '2' && mode === 'browse') {
+    e.preventDefault();
+    stagedGlideToYear(1955, 1850);
+    return;
+  }
+  if (e.key === '1' && mode === 'pdp') {
+    e.preventDefault();
+    stagedGlideToSlide(1, 950);
+    return;
+  }
+  if (e.key === '2' && mode === 'pdp') {
+    e.preventDefault();
+    const slides = lockedBag ? getSlidesFor(lockedBag.year) : [];
+    stagedGlideToSlide(Math.max(0, slides.length - 1), 1150);
+    return;
+  }
   if (mode === 'browse') {
     if (e.key === 'ArrowLeft')  setYear(Math.round(yearF) - 1, true);
     if (e.key === 'ArrowRight') setYear(Math.round(yearF) + 1, true);
@@ -723,4 +874,10 @@ window.protoApi = {
   getBagEl() { return bagLayer; },
   getYearEl() { return yearEl; },
   getStablePdpMediaRect,
+  recording: {
+    glideToYear: stagedGlideToYear,
+    glideToSlide: stagedGlideToSlide,
+    year1990: () => stagedGlideToYear(1990, 1450),
+    year1955: () => stagedGlideToYear(1955, 1850),
+  },
 };

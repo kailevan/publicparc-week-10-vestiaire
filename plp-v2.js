@@ -141,7 +141,7 @@ function morphTileToPrototype(tile) {
   // Pre-warm prototype: year, bag name text. (We do NOT touch .bag__img
   // anymore — the clone IS the bag from here on. Internal .bag__img--a/b
   // are forced opacity 0 by CSS so they never compete with the clone.)
-  window.protoApi.setYear(year);
+  window.protoApi.setYear(year, false, true);
   const bagLayer = window.protoApi.getBagEl();
   const bagnameEl = document.querySelector('.bagname');
   if (bagnameEl) bagnameEl.textContent = bagName;
