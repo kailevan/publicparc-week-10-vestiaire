@@ -185,6 +185,7 @@ const imgA       = bagLayer.querySelector('.bag__img--a');
 const imgB       = bagLayer.querySelector('.bag__img--b');
 const backBtn    = document.querySelector('.back');
 const buyPrice   = document.querySelector('.buybar__price');
+const storyCard  = document.getElementById('storyCard');
 
 // ---------- State ---------------------------------------------------
 let mode = 'browse';          // 'browse' | 'pdp'
@@ -204,6 +205,40 @@ function setActiveTx(v) {
 let frontLayer = 'a';
 let lastBagShown = null;
 let lastEditorialShown = null;
+
+function getStablePdpMediaRect() {
+  const inner = document.querySelector('.stage__inner');
+  if (!inner) return bagLayer.getBoundingClientRect();
+  const r = inner.getBoundingClientRect();
+  const size = Math.min(r.width * 0.92, r.height);
+  return {
+    left: r.left + (r.width - size) / 2,
+    top: r.bottom - size + 13,
+    width: size,
+    height: size,
+  };
+}
+
+function getStablePdpCardRect() {
+  const rect = getStablePdpMediaRect();
+  const xPad = rect.width * 0.073;
+  const yPad = rect.height * 0.074;
+  return {
+    left: rect.left - xPad,
+    top: rect.top - yPad,
+    width: rect.width + xPad * 2,
+    height: rect.height + yPad * 2,
+  };
+}
+
+function alignStoryCardToBag() {
+  if (!storyCard || document.body.dataset.slideType !== 'story') return;
+  const rect = getStablePdpCardRect();
+  storyCard.style.setProperty('--story-card-left', `${rect.left}px`);
+  storyCard.style.setProperty('--story-card-top', `${rect.top}px`);
+  storyCard.style.setProperty('--story-card-width', `${rect.width}px`);
+  storyCard.style.setProperty('--story-card-height', `${rect.height}px`);
+}
 
 let dragging = false;
 let dragStartX = 0;
@@ -317,14 +352,16 @@ function showBag(bag) {
 }
 
 function showEditorial(year, idx) {
-  if (lastEditorialShown === idx) return;
-  lastEditorialShown = idx;
+  const editorialKey = `${year}:${idx}`;
+  if (lastEditorialShown === editorialKey) return;
+  lastEditorialShown = editorialKey;
   const slides = getSlidesFor(year);
   const s = slides[idx];
   if (!s) return;
 
   if (s.type === 'product') {
     hideStoryCard();
+    document.body.dataset.slideType = 'product';
     const bag = BAGS.find(b => b.year === year) || lockedBag;
     const probe = new Image();
     probe.onload  = () => showImageURL(bag.img);
@@ -334,22 +371,34 @@ function showEditorial(year, idx) {
     showStoryCard(year);
   } else {
     hideStoryCard();
+    document.body.dataset.slideType = 'editorial';
     const probe = new Image();
     probe.onload  = () => showImageURL(s.src);
     probe.onerror = () => showImageURL(editorialPlaceholderURI(s.label, year));
     probe.src = s.src;
   }
+  // Bag layout shifts between slide types (editorial pushes the bag to
+  // the bottom of the stage). Re-position the morph-clone so it stays
+  // glued to the .bag's new rect.
+  if (window.realignCloneToBag) {
+    requestAnimationFrame(window.realignCloneToBag);
+  }
 }
 
 function showStoryCard(year) {
-  const card = document.getElementById('storyCard');
+  const card = storyCard;
   if (!card) return;
   const text = (typeof BAG_STORIES !== 'undefined') ? BAG_STORIES[year] : null;
   if (!text) return;
-  card.textContent = text;
-  card.scrollTop = 0;
+  card.innerHTML = '';
+  const scroller = document.createElement('div');
+  scroller.className = 'story-card__scroll';
+  scroller.textContent = text;
+  card.appendChild(scroller);
+  scroller.scrollTop = 0;
   card.setAttribute('aria-hidden', 'false');
   document.body.dataset.slideType = 'story';
+  requestAnimationFrame(alignStoryCardToBag);
   // Hide the morph-clone (the bag image) — it's z-index 9999, so CSS
   // can't easily stack over it. Toggling its opacity inline is the
   // simplest way to let the story text stand alone.
@@ -361,7 +410,7 @@ function showStoryCard(year) {
 }
 
 function hideStoryCard() {
-  const card = document.getElementById('storyCard');
+  const card = storyCard;
   if (card) card.setAttribute('aria-hidden', 'true');
   if (document.body.dataset.slideType === 'story') {
     document.body.dataset.slideType = '';
@@ -615,6 +664,7 @@ function exitPDP() {
     mode = 'browse';
     app.dataset.mode = 'browse';
     hideStoryCard();
+    document.body.dataset.slideType = '';
     lastBagShown = null;
     setYear(restoreYear);
     if (cloneImg) {
@@ -659,6 +709,7 @@ window.addEventListener('load', init);
 window.addEventListener('resize', () => {
   if (mode === 'browse') setYear(yearF);
   else setSlide(slideIdx);
+  requestAnimationFrame(alignStoryCardToBag);
 });
 
 // Expose for cross-script coordination with plp.js (PLP→prototype morph)
@@ -671,4 +722,5 @@ window.protoApi = {
   },
   getBagEl() { return bagLayer; },
   getYearEl() { return yearEl; },
+  getStablePdpMediaRect,
 };

@@ -334,16 +334,6 @@ function morphPrototypeToPlp() {
     source.classList.remove('chip--is-source');
     source.classList.remove('hot-filter--is-source');
 
-    browseUiEls.forEach(el => {
-      if (!el) return;
-      el.style.transition = '';
-      el.style.opacity = '';
-    });
-    if (bagnameEl) {
-      bagnameEl.style.transition = '';
-      bagnameEl.style.opacity = '';
-    }
-
     // Clone fades out over 350ms — slow enough to crossfade smoothly
     // with the PLP fade-in (500ms via .plp-view's default transition).
     morphClone.style.transition = 'opacity 350ms ease';
@@ -356,6 +346,15 @@ function morphPrototypeToPlp() {
     morphClone.style.opacity = '';
     morphClone.style.background = '';
     morphClone.style.borderRadius = '';
+    browseUiEls.forEach(el => {
+      if (!el) return;
+      el.style.transition = '';
+      el.style.opacity = '';
+    });
+    if (bagnameEl) {
+      bagnameEl.style.transition = '';
+      bagnameEl.style.opacity = '';
+    }
     sourceTile = null;
   }, T_UI_FADE + T_EXPAND + T_SETTLE + 400);
 }
@@ -367,7 +366,10 @@ function realignCloneToBag() {
   if (!window.protoApi) return;
   const state = document.body.dataset.state;
   if (state !== 'browse' && state !== 'pdp') return;
-  const rect = window.protoApi.getBagEl().getBoundingClientRect();
+  const slideType = document.body.dataset.slideType;
+  const rect = (slideType === 'editorial' && window.protoApi.getStablePdpMediaRect)
+    ? window.protoApi.getStablePdpMediaRect()
+    : window.protoApi.getBagEl().getBoundingClientRect();
   morphClone.style.transition = 'none';
   morphClone.style.left   = `${rect.left}px`;
   morphClone.style.top    = `${rect.top}px`;
